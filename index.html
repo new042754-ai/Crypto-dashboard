@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Crypto Dashboard</title>
+  <style>
+    body { font-family: Arial; text-align: center; background: #111; color: white; }
+    #chart { width: 100%; height: 400px; }
+    button { padding: 10px 20px; margin: 10px; font-size: 16px; border: none; border-radius: 5px; cursor: pointer; }
+    .start { background: green; color: white; }
+    .stop { background: red; color: white; }
+  </style>
+</head>
+<body>
+  <h1>Crypto Dashboard</h1>
+  <div id="chart"></div>
+  <button class="start" onclick="startAlgo()">Start Algo</button>
+  <button class="stop" onclick="stopAlgo()">Stop Algo</button>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    let running = false;
+
+    // Demo data
+    const ctx = document.createElement('canvas');
+    document.getElementById('chart').appendChild(ctx);
+    const chart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: [],
+        datasets: [{
+          label: 'BTC Price (USD)',
+          borderColor: 'yellow',
+          data: [],
+          fill: false
+        }]
+      }
+    });
+
+    function fetchPrice() {
+      fetch('https://api.coindesk.com/v1/bpi/currentprice/BTC.json')
+        .then(res => res.json())
+        .then(data => {
+          const price = data.bpi.USD.rate_float;
+          chart.data.labels.push(new Date().toLocaleTimeString());
+          chart.data.datasets[0].data.push(price);
+          chart.update();
+        });
+    }
+
+    function startAlgo() {
+      running = true;
+      alert('Algo Started');
+      setInterval(() => { if (running) fetchPrice(); }, 5000);
+    }
+
+    function stopAlgo() {
+      running = false;
+      alert('Algo Stopped');
+    }
+  </script>
+</body>
+</html>
