@@ -1,18 +1,13 @@
 {
   "name": "JK ALGO Charts",
-  "short_name": "JKCharts",
+  "short_name": "JK ALGO",
   "start_url": ".",
   "display": "standalone",
-  "background_color": "#000000",
-  "theme_color": "#000000",
+  "background_color": "#ffffff",
+  "description": "Crypto dashboard app",
   "icons": [
     {
-      "src": "file_000000009a8461fb962f90eac1b7dfa2",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "file_000000009a8461fb962f90eac1b7dfa2",
+      "src": "icon.png",
       "sizes": "512x512",
       "type": "image/png"
     }
