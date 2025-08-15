@@ -1,86 +1,74 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Crypto Charts — Full Screen</title>
-  <link rel="preconnect" href="https://s3.tradingview.com">
-  <style>
-    :root{
-      --bg:#0b0f14; --panel:#121821; --text:#e8f0ff;
-      --muted:#8fa3c7; --green:#16c784; --red:#ff4d4f;
-      --btn:#1e2a3a; --btnHover:#2a3a51;
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font:600 15px/1.4 Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
-    .topbar{
-      position:fixed; inset:0 0 auto 0; height:56px; display:flex; gap:8px; align-items:center;
-      padding:8px 12px; background:linear-gradient(180deg,rgba(9,13,19,.9),rgba(9,13,19,.6));
-      backdrop-filter: blur(6px); border-bottom:1px solid #1b2432; z-index:9;
-    }
-    .brand{font-weight:800; letter-spacing:.3px; display:flex; align-items:center; gap:10px}
-    .pill{padding:8px 12px; border-radius:10px; background:var(--panel); color:var(--muted); border:1px solid #1b2736}
-    .row{display:flex; align-items:center; gap:8px}
-    button{
-      appearance:none; border:1px solid #263346; background:var(--btn); color:var(--text);
-      padding:9px 14px; border-radius:10px; cursor:pointer; transition:.15s background;
-      font-weight:700;
-    }
-    button:hover{background:var(--btnHover)}
-    .start{background:rgba(22,199,132,.15); border-color:#1e3f35; color:var(--green)}
-    .stop{background:rgba(255,77,79,.15); border-color:#4a1f22; color:var(--red)}
-    .symbol-btn{min-width:70px}
-    #statusDot{
-      width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:6px;
-      background:#8fa3c7; box-shadow:0 0 0 4px rgba(143,163,199,.15);
-    }
-    #chartWrap{position:fixed; inset:56px 0 0 0;}   /* full screen under topbar */
-    #tv_chart{position:absolute; inset:0}
-    /* small cards like the sample image (optional) */
-    .cards{position:fixed; right:10px; top:66px; display:flex; gap:10px; z-index:8}
-    .card{background:var(--panel); border:1px solid #1b2736; border-radius:16px; padding:12px 16px; min-width:170px}
-    .card .h{font-size:14px; color:var(--muted)}
-    .card .v{font-size:20px; font-weight:800}
-    .up{color:var(--green)} .dn{color:var(--red)}
-    @media (max-width:720px){ .cards{display:none} }
-  </style>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>CryptoTrader</title>
+<link rel="preconnect" href="https://s3.tradingview.com">
+<style>
+  :root{--bg:#0b0f14;--panel:#121821;--text:#e8f0ff;--muted:#8fa3c7;--green:#16c784;--red:#ff4d4f;--btn:#1e2a3a;--btn2:#2a3a51}
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font:600 15px/1.4 Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif}
+  .top{position:fixed;inset:0 0 auto 0;height:56px;display:flex;gap:8px;align-items:center;padding:8px 12px;background:linear-gradient(180deg,rgba(9,13,19,.9),rgba(9,13,19,.6));border-bottom:1px solid #1b2432;z-index:9}
+  .brand{font-weight:800}
+  .pill{margin-left:8px;padding:7px 10px;border-radius:10px;background:var(--panel);color:var(--muted);border:1px solid #1b2736}
+  .row{display:flex;gap:8px;margin-left:auto}
+  button{border:1px solid #263346;background:var(--btn);color:var(--text);padding:9px 14px;border-radius:10px;cursor:pointer;font-weight:700}
+  button:hover{background:var(--btn2)}
+  .symbol-btn{min-width:70px}
+  .active{outline:2px solid #3b82f6}
+  .start{background:rgba(22,199,132,.15);border-color:#1e3f35;color:var(--green)}
+  .stop{background:rgba(255,77,79,.15);border-color:#4a1f22;color:var(--red)}
+
+  #stage{position:fixed;inset:56px 0 0 0}
+  #tv_chart{position:absolute;inset:0}
+  .hidden{display:none}
+
+  /* idle screen */
+  .empty{height:100%;display:grid;place-items:center;color:var(--muted)}
+  .empty .box{background:var(--panel);border:1px solid #1b2736;padding:18px 22px;border-radius:14px}
+</style>
 </head>
 <body>
-  <div class="topbar">
-    <div class="brand">📈 CryptoTrader <span class="pill" id="algoState"><span id="statusDot"></span><span id="statusText">Stopped</span></span></div>
-
-    <div class="row" style="margin-left:auto">
-      <button class="symbol-btn" id="btcBtn">BTC</button>
-      <button class="symbol-btn" id="ethBtn">ETH</button>
+  <div class="top">
+    <div class="brand">📈 CryptoTrader <span class="pill"><span id="dot" style="width:8px;height:8px;display:inline-block;border-radius:50%;background:#8fa3c7;margin-right:6px"></span><span id="stateTxt">Stopped</span></span></div>
+    <div class="row">
+      <button id="btcBtn" class="symbol-btn">BTC</button>
+      <button id="ethBtn" class="symbol-btn">ETH</button>
       <button id="startBtn" class="start">Start</button>
       <button id="stopBtn" class="stop">Stop</button>
     </div>
   </div>
 
-  <!-- optional small info cards (like your screenshot) -->
-  <div class="cards" id="miniCards" aria-hidden="true">
-    <div class="card"><div class="h">BTC/USDT</div><div class="v" id="btcPx">—</div><div class="up" id="btcChg">—</div></div>
-    <div class="card"><div class="h">ETH/USDT</div><div class="v" id="ethPx">—</div><div class="up" id="ethChg">—</div></div>
-  </div>
-
-  <div id="chartWrap">
-    <div id="tv_chart"></div>
+  <div id="stage">
+    <!-- idle view (chart hidden) -->
+    <div id="idle" class="empty">
+      <div class="box">Chart hidden. Tap <b>BTC</b> or <b>ETH</b> to show.</div>
+    </div>
+    <!-- chart container (starts hidden) -->
+    <div id="tv_chart" class="hidden"></div>
   </div>
 
   <script src="https://s3.tradingview.com/tv.js"></script>
   <script>
-    // ------- CHART -------
-    const containerId = "tv_chart";
-    let tvWidget;
+    let tvWidget, currentSymbol = null;
+
     function loadChart(symbol){
-      // destroy old widget if any
-      document.getElementById(containerId).innerHTML = "";
+      // toggle buttons active
+      document.getElementById('btcBtn').classList.toggle('active', symbol.includes('BTC'));
+      document.getElementById('ethBtn').classList.toggle('active', symbol.includes('ETH'));
+
+      // show chart, hide idle
+      document.getElementById('idle').classList.add('hidden');
+      const chartDiv = document.getElementById('tv_chart');
+      chartDiv.classList.remove('hidden');
+      chartDiv.innerHTML = "";
+
       tvWidget = new TradingView.widget({
-        container_id: containerId,
+        container_id: 'tv_chart',
         autosize: true,
         symbol,
         interval: "60",
-        timezone: "Etc/UTC",
         theme: "dark",
         style: "1",
         locale: "en",
@@ -89,55 +77,22 @@
         studies: ["MASimple@tv-basicstudies","MACD@tv-basicstudies"],
         withdateranges: true
       });
+      currentSymbol = symbol;
     }
-    // default
-    let currentSymbol = "BINANCE:BTCUSDT";
-    loadChart(currentSymbol);
 
-    // ------- BUTTONS & STATE -------
-    const startBtn = document.getElementById("startBtn");
-    const stopBtn  = document.getElementById("stopBtn");
-    const btcBtn   = document.getElementById("btcBtn");
-    const ethBtn   = document.getElementById("ethBtn");
-    const statusDot = document.getElementById("statusDot");
-    const statusText= document.getElementById("statusText");
+    // buttons
+    document.getElementById('btcBtn').onclick = ()=> loadChart("BINANCE:BTCUSDT");
+    document.getElementById('ethBtn').onclick = ()=> loadChart("BINANCE:ETHUSDT");
 
-    const state = {
-      running: JSON.parse(localStorage.getItem("algoRunning")||"false")
-    };
-    function setRunning(flag){
-      state.running = flag;
-      localStorage.setItem("algoRunning", JSON.stringify(flag));
-      statusDot.style.background = flag ? "#16c784" : "#8fa3c7";
-      statusText.textContent = flag ? "Running" : "Stopped";
-      startBtn.disabled = flag;
-      stopBtn.disabled  = !flag;
+    // Start/Stop just UI state for now (no backend trading on Pages)
+    const dot = document.getElementById('dot'), stateTxt = document.getElementById('stateTxt');
+    function setRun(f){ localStorage.setItem('algoRunning', JSON.stringify(f));
+      dot.style.background = f ? "#16c784" : "#8fa3c7"; stateTxt.textContent = f ? "Running" : "Stopped";
+      document.getElementById('startBtn').disabled = f; document.getElementById('stopBtn').disabled = !f;
     }
-    startBtn.onclick = () => setRunning(true);
-    stopBtn.onclick  = () => setRunning(false);
-    btcBtn.onclick   = () => { currentSymbol="BINANCE:BTCUSDT"; loadChart(currentSymbol); };
-    ethBtn.onclick   = () => { currentSymbol="BINANCE:ETHUSDT"; loadChart(currentSymbol); };
-    setRunning(state.running);
-
-    // ------- TINY PRICE CARDS (free API via TradingView datafeed not available) -----
-    // We'll fetch from CoinGecko (public, no key). If CORS blocks on GitHub Pages sometimes, cards will just stay hidden.
-    const ids = { btc:["bitcoin","btcPx","btcChg"], eth:["ethereum","ethPx","ethChg"] };
-    async function updateCards(){
-      try{
-        const r = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd&include_24hr_change=true");
-        const j = await r.json();
-        for(const [sym,[id,pxEl,chgEl]] of Object.entries(ids)){
-          const px  = j[id].usd;
-          const chg = j[id].usd_24h_change;
-          const pxN = document.getElementById(pxEl), chgN=document.getElementById(chgEl);
-          pxN.textContent = "$"+px.toLocaleString(undefined,{maximumFractionDigits:2});
-          chgN.textContent = (chg>=0?"+":"")+chg.toFixed(2)+"%";
-          chgN.className = chg>=0 ? "up" : "dn";
-        }
-        document.getElementById("miniCards").style.display="flex";
-      }catch(e){ /* ignore if blocked */ }
-    }
-    updateCards(); setInterval(updateCards, 60_000);
+    document.getElementById('startBtn').onclick = ()=> setRun(true);
+    document.getElementById('stopBtn').onclick  = ()=> setRun(false);
+    setRun(JSON.parse(localStorage.getItem('algoRunning')||"false"));
   </script>
 </body>
 </html>
