@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CryptoTrader</title>
   <style>
+    /* --- Your existing styles --- */
     body {
       font-family: Arial, sans-serif;
       background-color: #111;
@@ -43,12 +44,9 @@
       margin: 10px 0;
       font-weight: bold;
     }
-    .status.stopped {
-      color: red;
-    }
-    .status.running {
-      color: green;
-    }
+    .status.stopped { color: red; }
+    .status.running { color: green; }
+
     .price-card {
       background: #222;
       padding: 15px;
@@ -61,32 +59,51 @@
       font-size: 1.5em;
       margin-top: 5px;
     }
+
     /* Overlay for chart */
     .overlay {
       display: none;
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
       background: rgba(0,0,0,0.9);
       z-index: 9999;
       flex-direction: column;
     }
-    .overlay.show {
-      display: flex;
-    }
+    .overlay.show { display: flex; }
     .overlay-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: #000;
-      padding: 10px;
-      color: white;
+      display: flex; justify-content: space-between; align-items: center;
+      background: #000; padding: 10px; color: white;
     }
-    #tv-container {
-      flex: 1;
+    #tv-container { flex: 1; }
+
+    /* --- Strategy widget styles (added) --- */
+    .strategy-card{
+      background:#1c1c1c;border-radius:16px;padding:16px;
+      display:flex;flex-direction:column;align-items:center;gap:8px;
+      box-shadow:0 6px 20px rgba(0,0,0,.35);max-width:260px;margin:16px auto
     }
+    .strategy-title{font-weight:700;color:#ff3b3b;background:#111;padding:6px 12px;border-radius:10px}
+    .strategy-plus{
+      width:64px;height:64px;border-radius:16px;border:none;background:#0f0f0f;
+      font-size:34px;line-height:1;color:#ff3b3b;box-shadow:inset 0 0 0 2px #2a2a2a;cursor:pointer
+    }
+    .strategy-summary{font-size:12px;color:#bbb;text-align:center}
+
+    .strategy-modal::backdrop{background:rgba(0,0,0,.6)}
+    .strategy-modal{border:none;border-radius:18px;padding:0;background:#111;color:#eee;width:min(92vw,520px)}
+    .strategy-form{padding:16px 16px 12px}
+    .strategy-form-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+    .close-btn{background:#1f1f1f;border:none;color:#bbb;font-size:22px;width:34px;height:34px;border-radius:10px}
+    .row{display:flex;justify-content:space-between;align-items:center;margin:10px 0;gap:12px}
+    .row span{color:#bbb}
+    .row input,.row select{
+      flex:1;background:#181818;border:1px solid #2a2a2a;border-radius:10px;color:#eee;padding:8px
+    }
+    .param-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .actions{display:flex;justify-content:flex-end;gap:10px;margin-top:12px}
+    .btn.primary{background:#16a34a;color:#fff}
+    .btn.secondary{background:#333;color:#ddd}
   </style>
 </head>
 <body>
@@ -110,6 +127,40 @@
   <div class="price" id="price-eth">--</div>
 </div>
 
+<!-- ===== Strategy Widget START ===== -->
+<div id="strategy-card" class="strategy-card">
+  <div class="strategy-title">Strategy</div>
+  <button id="open-strategy" class="strategy-plus">+</button>
+  <div id="strategy-summary" class="strategy-summary">None selected</div>
+</div>
+
+<dialog id="strategy-modal" class="strategy-modal">
+  <form method="dialog" id="strategy-form" class="strategy-form">
+    <div class="strategy-form-header">
+      <h3>Choose Strategy</h3>
+      <button type="button" id="close-strategy" class="close-btn">×</button>
+    </div>
+
+    <label class="row">
+      <span>Type</span>
+      <select id="strategy-type">
+        <option value="SMA">SMA Crossover</option>
+        <option value="RSI">RSI</option>
+        <option value="MACD">MACD</option>
+        <option value="VWAP">VWAP</option>
+      </select>
+    </label>
+
+    <div id="params-area"></div>
+
+    <div class="actions">
+      <button value="cancel" class="btn secondary">Cancel</button>
+      <button id="save-strategy" value="default" class="btn primary">Save</button>
+    </div>
+  </form>
+</dialog>
+<!-- ===== Strategy Widget END ===== -->
+
 <!-- Chart overlay -->
 <div class="overlay" id="overlay">
   <div class="overlay-header">
@@ -121,15 +172,8 @@
 
 <script src="https://s3.tradingview.com/tv.js"></script>
 <script>
+  /* --------- Existing logic --------- */
   const statusEl = document.getElementById('algo-status');
-  document.getElementById('start').onclick = () => {
-    statusEl.textContent = 'Algo Running';
-    statusEl.className = 'status running';
-  };
-  document.getElementById('stop').onclick = () => {
-    statusEl.textContent = 'Algo Stopped';
-    statusEl.className = 'status stopped';
-  };
 
   // Price update function
   async function fetchPrice(symbol, el) {
@@ -141,7 +185,6 @@
       el.textContent = '--';
     }
   }
-
   function updatePrices() {
     fetchPrice('BTCUSDT', document.getElementById('price-btc'));
     fetchPrice('ETHUSDT', document.getElementById('price-eth'));
@@ -169,14 +212,127 @@
       locale: "en",
       withdateranges: true,
       allow_symbol_change: false
-      // No indicators (clean chart)
     });
   }
-
   document.getElementById('card-btc').onclick = () => openChart('BTC/USDT', 'BINANCE:BTCUSDT');
   document.getElementById('card-eth').onclick = () => openChart('ETH/USDT', 'BINANCE:ETHUSDT');
   document.getElementById('ov-close').onclick = () => overlay.classList.remove('show');
+
+  /* --------- Strategy widget logic (added) --------- */
+  (function(){
+    const STORAGE_KEY = 'strategyConfig';
+    const defaultConfigs = {
+      SMA: { fast: 20, slow: 50, timeframe: '1m' },
+      RSI: { period: 14, overbought: 70, oversold: 30, timeframe: '1m' },
+      MACD:{ fast:12, slow:26, signal:9, timeframe:'1m' },
+      VWAP:{ session:'session', timeframe:'1m' }
+    };
+
+    const el = {
+      open: document.getElementById('open-strategy'),
+      modal: document.getElementById('strategy-modal'),
+      close: document.getElementById('close-strategy'),
+      type: document.getElementById('strategy-type'),
+      params: document.getElementById('params-area'),
+      save: document.getElementById('save-strategy'),
+      summary: document.getElementById('strategy-summary')
+    };
+
+    function loadConfig(){ try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)) || null }catch(e){ return null } }
+    function saveConfig(cfg){ localStorage.setItem(STORAGE_KEY, JSON.stringify(cfg)); updateSummary(cfg); }
+    function updateSummary(cfg){
+      if(!cfg){ el.summary.textContent='None selected'; return; }
+      const p = Object.entries(cfg.params).map(([k,v])=>`${k}:${v}`).join(' | ');
+      el.summary.textContent = `${cfg.type} — ${p}`;
+    }
+
+    function renderParams(type, init){
+      const html = {
+        SMA:`<div class="param-grid">
+                <label class="row"><span>Fast</span><input id="p-fast" type="number" min="1" value="${init.fast}"></label>
+                <label class="row"><span>Slow</span><input id="p-slow" type="number" min="2" value="${init.slow}"></label>
+              </div>
+              <label class="row"><span>Timeframe</span>
+                <select id="p-timeframe"><option>1m</option><option>5m</option><option>15m</option><option>1h</option></select>
+              </label>`,
+        RSI:`<div class="param-grid">
+                <label class="row"><span>Period</span><input id="p-period" type="number" min="2" value="${init.period}"></label>
+                <label class="row"><span>Overbought</span><input id="p-ob" type="number" value="${init.overbought}"></label>
+                <label class="row"><span>Oversold</span><input id="p-os" type="number" value="${init.oversold}"></label>
+              </div>
+              <label class="row"><span>Timeframe</span>
+                <select id="p-timeframe"><option>1m</option><option>5m</option><option>15m</option><option>1h</option></select>
+              </label>`,
+        MACD:`<div class="param-grid">
+                <label class="row"><span>Fast</span><input id="p-fast" type="number" min="1" value="${init.fast}"></label>
+                <label class="row"><span>Slow</span><input id="p-slow" type="number" min="2" value="${init.slow}"></label>
+                <label class="row"><span>Signal</span><input id="p-signal" type="number" min="1" value="${init.signal}"></label>
+              </div>
+              <label class="row"><span>Timeframe</span>
+                <select id="p-timeframe"><option>1m</option><option>5m</option><option>15m</option><option>1h</option></select>
+              </label>`,
+        VWAP:`<label class="row"><span>Session</span>
+                <select id="p-session"><option value="session">Session</option><option value="daily">Daily</option><option value="weekly">Weekly</option></select>
+              </label>
+              <label class="row"><span>Timeframe</span>
+                <select id="p-timeframe"><option>1m</option><option>5m</option><option>15m</option><option>1h</option></select>
+              </label>`
+      }[type];
+      el.params.innerHTML = html;
+      const tf = el.params.querySelector('#p-timeframe'); if(tf) tf.value = init.timeframe;
+    }
+
+    el.open.addEventListener('click', ()=>{
+      const cfg = loadConfig();
+      const type = cfg?.type || 'SMA';
+      el.type.value = type;
+      renderParams(type, cfg?.params || defaultConfigs[type]);
+      el.modal.showModal();
+    });
+    el.close.addEventListener('click', ()=> el.modal.close());
+    el.type.addEventListener('change', (e)=> renderParams(e.target.value, defaultConfigs[e.target.value]));
+
+    el.save.addEventListener('click', (e)=>{
+      e.preventDefault();
+      const type = el.type.value;
+      const params = collectParams(type);
+      const cfg = { type, params };
+      saveConfig(cfg);
+      el.modal.close();
+      window.dispatchEvent(new CustomEvent('strategy:changed', { detail: cfg }));
+    });
+
+    function collectParams(type){
+      const q=(id)=> el.params.querySelector(id);
+      if(type==='SMA')  return { fast:+q('#p-fast').value, slow:+q('#p-slow').value, timeframe:q('#p-timeframe').value };
+      if(type==='RSI')  return { period:+q('#p-period').value, overbought:+q('#p-ob').value, oversold:+q('#p-os').value, timeframe:q('#p-timeframe').value };
+      if(type==='MACD') return { fast:+q('#p-fast').value, slow:+q('#p-slow').value, signal:+q('#p-signal').value, timeframe:q('#p-timeframe').value };
+      if(type==='VWAP') return { session:q('#p-session').value, timeframe:q('#p-timeframe').value };
+      return {};
+    }
+
+    // Public getter for Start button or other scripts
+    window.getStrategyConfig = ()=> loadConfig() || { type:'SMA', params: defaultConfigs.SMA };
+
+    // Initialize summary at load
+    updateSummary(loadConfig());
+  })();
+
+  /* --------- Start/Stop now use strategy config --------- */
+  document.getElementById('start').onclick = () => {
+    const cfg = window.getStrategyConfig();
+    console.log('Starting algo with strategy:', cfg);
+    statusEl.textContent = 'Algo Running';
+    statusEl.className = 'status running';
+    // TODO: yahin se backend/bot ko call karein (cfg ke saath)
+    // fetch('/start', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(cfg) })
+  };
+  document.getElementById('stop').onclick = () => {
+    statusEl.textContent = 'Algo Stopped';
+    statusEl.className = 'status stopped';
+    // TODO: backend ko stop signal bhejna ho to yahan karein
+  };
 </script>
 
 </body>
-</html>
+  </html>
