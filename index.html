@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>CryptoTrader</title>
   <style>
-    /* Base UI */
     body{font-family:Arial,sans-serif;background:#111;color:#fff;margin:0;padding:0;text-align:center}
     header{display:flex;justify-content:center;gap:10px;padding:10px;background:#222;position:sticky;top:0;z-index:10}
     button{padding:10px 20px;border:none;border-radius:6px;cursor:pointer;font-weight:700}
@@ -19,12 +18,10 @@
     .price-card{background:#222;padding:15px;border-radius:12px;margin:12px auto;width:260px;cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,.35)}
     .price{font-size:1.6em;margin-top:6px}
 
-    /* Strategy widgets */
     .strategy-card{background:#1c1c1c;border-radius:20px;padding:16px;display:flex;flex-direction:column;align-items:center;gap:10px;box-shadow:0 10px 30px rgba(0,0,0,.45);max-width:320px;margin:18px auto}
     .strategy-title{font-weight:800;color:#ff3b3b;background:#111;padding:6px 12px;border-radius:12px}
     .strategy-plus{width:70px;height:70px;border-radius:18px;border:none;background:#0f0f0f;font-size:36px;line-height:1;color:#ff3b3b;box-shadow:inset 0 0 0 2px #2a2a2a;cursor:pointer}
     .strategy-summary{font-size:12px;color:#bbb;text-align:center}
-
     .strategy-modal::backdrop{background:rgba(0,0,0,.6)}
     .strategy-modal{border:none;border-radius:20px;padding:0;background:#111;color:#eee;width:min(92vw,560px)}
     .strategy-form{padding:16px}
@@ -38,7 +35,6 @@
     .btn.primary{background:#16a34a;color:#fff}
     .btn.secondary{background:#333;color:#ddd}
 
-    /* Overlay chart */
     .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.94);z-index:9999;flex-direction:column}
     .overlay.show{display:flex}
     .overlay-header{display:flex;justify-content:space-between;align-items:center;background:#000;padding:10px 12px}
@@ -68,13 +64,12 @@
     <div class="price" id="price-eth">--</div>
   </div>
 
-  <!-- ===== Strategy Widget (BTC) ===== -->
+  <!-- Strategy (BTC) -->
   <div id="strategy1-card" class="strategy-card">
     <div class="strategy-title">Strategy (BTC)</div>
     <button id="open-strategy1" class="strategy-plus">+</button>
     <div id="strategy1-summary" class="strategy-summary">None selected</div>
   </div>
-
   <dialog id="strategy1-modal" class="strategy-modal">
     <form method="dialog" id="strategy1-form" class="strategy-form">
       <div class="strategy-form-header">
@@ -98,13 +93,12 @@
     </form>
   </dialog>
 
-  <!-- ===== Strategy Widget (ETH) ===== -->
+  <!-- Strategy (ETH) -->
   <div id="strategy2-card" class="strategy-card">
     <div class="strategy-title">Strategy (ETH)</div>
     <button id="open-strategy2" class="strategy-plus">+</button>
     <div id="strategy2-summary" class="strategy-summary">None selected</div>
   </div>
-
   <dialog id="strategy2-modal" class="strategy-modal">
     <form method="dialog" id="strategy2-form" class="strategy-form">
       <div class="strategy-form-header">
@@ -128,7 +122,7 @@
     </form>
   </dialog>
 
-  <!-- Overlay -->
+  <!-- Overlay chart -->
   <div class="overlay" id="overlay">
     <div class="overlay-header">
       <span id="overlay-title"></span>
@@ -140,19 +134,26 @@
     </div>
   </div>
 
-  <!-- Lightweight Charts library -->
+  <!-- Lightweight Charts -->
   <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
-
   <script>
-    /* ------------ Status & Prices ------------ */
+    /* ===== Status & Prices (CORS-safe endpoint) ===== */
     const statusEl = document.getElementById('algo-status');
-
     async function fetchPrice(symbol, el){
-      try{
-        const r = await fetch(`https://api.binance.com/api/v3/ticker/price?symbol=${symbol}`);
-        const d = await r.json();
-        el.textContent = `$${(+d.price).toLocaleString()}`;
-      }catch{ el.textContent = '--'; }
+      const urls = [
+        `https://data.binance.com/api/v3/ticker/price?symbol=${symbol}`,
+        `https://api.binance.com/api/v3/ticker/price?symbol=${symbol}`
+      ];
+      for(const u of urls){
+        try{
+          const r = await fetch(u, {cache:'no-store'});
+          if(!r.ok) continue;
+          const d = await r.json();
+          el.textContent = `$${(+d.price).toLocaleString()}`;
+          return;
+        }catch(e){}
+      }
+      el.textContent = '--';
     }
     function updatePrices(){
       fetchPrice('BTCUSDT', document.getElementById('price-btc'));
@@ -160,33 +161,50 @@
     }
     updatePrices(); setInterval(updatePrices, 5000);
 
-    /* ------------ Helpers ------------ */
+    /* ===== Overlay helpers ===== */
     const overlay = document.getElementById('overlay');
     const overlayTitle = document.getElementById('overlay-title');
     const mainDiv = document.getElementById('chart-main');
     const indDiv  = document.getElementById('chart-indicator');
 
-    function showOverlay(){
-      overlay.style.display = 'flex';
-      overlay.classList.add('show');
-    }
-    document.getElementById('ov-close').onclick = () => {
-      overlay.classList.remove('show');
-      overlay.style.display = 'none';
-    };
+    function showOverlay(){ overlay.style.display='flex'; overlay.classList.add('show'); }
+    document.getElementById('ov-close').onclick = () => { overlay.classList.remove('show'); overlay.style.display='none'; };
 
-    function tfToBinance(tf){ return tf==='1m'?'1m':tf==='5m'?'5m':tf==='15m'?'15m':tf==='1h'?'1h':'1h'; }
+    function setLoading(is){
+      if(is){ mainDiv.innerHTML = '<div style="padding:16px;color:#aaa">Loading…</div>'; indDiv.innerHTML=''; }
+      else { mainDiv.innerHTML=''; indDiv.innerHTML=''; }
+    }
+
+    /* ===== Binance fetch (with fallback) ===== */
+    async function fetchKlines(symbol, interval, limit=500){
+      const urls = [
+        `https://data.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`,
+        `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`
+      ];
+      for(const u of urls){
+        try{
+          const res = await fetch(u, {cache:'no-store'});
+          if(!res.ok) continue;
+          const json = await res.json();
+          if(Array.isArray(json) && json.length) return json;
+        }catch(e){}
+      }
+      throw new Error('No data from Binance (CORS/Network)');
+    }
+
+    /* ===== Utils & Indicators ===== */
+    function tfToBinance(tf){ return tf==='1m'?'1m':tf==='5m'?'5m':tf==='15m'?'15m':'1h'; }
     function toOHLC(kl){ return kl.map(k=>({ time:Math.floor(k[0]/1000), open:+k[1], high:+k[2], low:+k[3], close:+k[4] })); }
     function sma(vals,p){ const out=[]; let s=0; for(let i=0;i<vals.length;i++){ s+=vals[i]; if(i>=p)s-=vals[i-p]; if(i>=p-1) out.push({i,value:s/p}); } return out; }
     function ema(vals,p){ const out=[]; const k=2/(p+1); let prev=vals[0]; for(let i=0;i<vals.length;i++){ const v=(i===0)?vals[0]:vals[i]*k+prev*(1-k); prev=v; out.push({i,value:v}); } return out.map((v,i)=>({...v,i})); }
-    function rsi(vals,p){ let g=0,l=0; const out=[]; for(let i=1;i<vals.length;i++){ const ch=vals[i]-vals[i-1]; const G=Math.max(ch,0), L=Math.max(-ch,0);
+    function rsi(vals,p){ let g=0,l=0; const out=[]; for(let i=1;i<vals.length;i++){ const ch=vals[i]-vals[i-1], G=Math.max(ch,0), L=Math.max(-ch,0);
       if(i<=p){ g+=G; l+=L; if(i===p){ const rs=g/(l||1e-9); out.push({i,value:100-100/(1+rs)});} }
-      else{ g=(g*(p-1)+G)/p; l=(l*(p-1)+L)/p; const rs=g/(l||1e-9); out.push({i,value:100-100/(1+rs)}); } } return out; }
+      else{ g=(g*(p-1)+G)/p; l=(l*(p-1)+L)/p; const rs=g/(l||1e-9); out.push({i,value:100-100/(1+rs)});} } return out; }
     function macd(vals,fast=12,slow=26,signal=9){ const ef=ema(vals,fast).map(x=>x.value), es=ema(vals,slow).map(x=>x.value);
       const ml=vals.map((_,i)=>(ef[i]??ef[0])-(es[i]??es[0])); const sl=ema(ml.map(v=>v??ml[0]),signal).map(x=>x.value); const h=ml.map((v,i)=>v-(sl[i]??0)); return {macdLine:ml,signalLine:sl,histogram:h}; }
     function vwap(c){ const out=[]; let cpv=0,cv=0; for(let i=0;i<c.length;i++){ const tp=(c[i].high+c[i].low+c[i].close)/3; const vol=Math.max(c[i].high-c[i].low,1e-7); cpv+=tp*vol; cv+=vol; out.push({i,value:cpv/cv}); } return out; }
 
-    /* ------------ Chart render ------------ */
+    /* ===== Charts ===== */
     let mainChart, mainSeries, maFastSeries, maSlowSeries, vwapSeries, indChart, indSeries, histSeries;
 
     function clearCharts(){
@@ -199,22 +217,32 @@
     }
 
     async function openChart(label, symbol, cfg){
-      showOverlay();
+      showOverlay(); setLoading(true);
       overlayTitle.textContent = label + ' — Custom Chart';
 
       const { type, params } = cfg || {};
       const tf = tfToBinance(params?.timeframe || '1m');
-      const url = `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${tf}&limit=500`;
 
-      const res = await fetch(url); const raw = await res.json();
-      const candles = toOHLC(raw); const closes = candles.map(c=>c.close);
+      let raw;
+      try{
+        raw = await fetchKlines(symbol, tf, 500);
+      }catch(err){
+        setLoading(false);
+        mainDiv.innerHTML = '<div style="padding:20px;color:#bbb">Unable to load candles (network/CORS). Please retry.</div>';
+        indDiv.style.display='none';
+        console.log(err);
+        return;
+      }
+
+      const candles = toOHLC(raw);
+      const closes = candles.map(c=>c.close);
 
       clearCharts();
+      setLoading(false);
       mainSeries.setData(candles);
 
-      // reset + hide indicator pane by default
       maFastSeries = maSlowSeries = vwapSeries = indSeries = histSeries = null;
-      indDiv.style.display = 'none';
+      indDiv.style.display='none';
 
       if(type==='SMA'){
         const fast = Number(params.fast)||9, slow=Number(params.slow)||21;
@@ -227,7 +255,8 @@
         const period = Number(params.period)||14;
         const r = rsi(closes, period).map(p=>({ time:candles[p.i].time, value:p.value }));
         indDiv.style.display='block';
-        indSeries = indChart.addLineSeries({ lineWidth:2 }); indSeries.setData(r);
+        indSeries = indChart.addLineSeries({ lineWidth:2 });
+        indSeries.setData(r);
       } else if(type==='MACD'){
         const fast = Number(params.fast)||12, slow=Number(params.slow)||26, signal=Number(params.signal)||9;
         const mac = macd(closes, fast, slow, signal);
@@ -241,14 +270,15 @@
         macdS.setData(macdLine); sigS.setData(signalLine); histSeries.setData(histogram);
       } else if(type==='VWAP'){
         const w = vwap(candles).map(p=>({ time:candles[p.i].time, value:p.value }));
-        vwapSeries = mainChart.addLineSeries({ lineWidth:2 }); vwapSeries.setData(w);
+        vwapSeries = mainChart.addLineSeries({ lineWidth:2 });
+        vwapSeries.setData(w);
       }
 
       mainChart.timeScale().fitContent();
       indChart.timeScale().fitContent();
     }
 
-    // Card clicks (force-open + safe cfg)
+    // Card taps
     function safeCfg(which){
       try{ return window.getStrategyConfig ? window.getStrategyConfig(which) : { type:'SMA', params:{fast:9,slow:21,timeframe:'1m'} }; }
       catch{ return { type:'SMA', params:{fast:9,slow:21,timeframe:'1m'} }; }
@@ -256,7 +286,7 @@
     document.getElementById('card-btc').onclick = () => openChart('BTC/USDT','BTCUSDT', safeCfg('BTC'));
     document.getElementById('card-eth').onclick = () => openChart('ETH/USDT','ETHUSDT', safeCfg('ETH'));
 
-    /* ------------ Two Strategy Widgets ------------ */
+    /* ===== Two Strategy Widgets (independent) ===== */
     (function(){
       function makeStrategyWidget(prefix, storageKey){
         const defaults = {
@@ -307,7 +337,7 @@
                    <select id="p-timeframe"><option>1m</option><option>5m</option><option>15m</option><option>1h</option></select>
                  </label>`,
             VWAP:`<label class="row"><span>Session</span>
-                   <select id="p-session"><option value="session">Session</option><option value="daily">Daily</option><option>weekly</option></select>
+                   <select id="p-session"><option value="session">Session</option><option value="daily">Daily</option><option value="weekly">Weekly</option></select>
                  </label>
                  <label class="row"><span>Timeframe</span>
                    <select id="p-timeframe"><option>1m</option><option>5m</option><option>15m</option><option>1h</option></select>
@@ -331,35 +361,19 @@
             type==='MACD'?{fast:+q('#p-fast').value, slow:+q('#p-slow').value, signal:+q('#p-signal').value, timeframe:q('#p-timeframe').value} :
             type==='VWAP'?{session:q('#p-session').value, timeframe:q('#p-timeframe').value} : {};
           const cfg = {type, params}; saveCfg(cfg); el.modal.close();
-          // if chart is open for this asset, refresh
           if(overlay.classList.contains('show')){
             const sym = (storageKey==='strategyBTC') ? 'BTCUSDT' : 'ETHUSDT';
             const label = (storageKey==='strategyBTC') ? 'BTC/USDT' : 'ETH/USDT';
             openChart(label, sym, cfg);
           }
         });
-
         updateSummary(loadCfg());
         return { getConfig: () => (loadCfg() || { type:'SMA', params: defaults.SMA }) };
       }
-
       const stratBTC = makeStrategyWidget('strategy1','strategyBTC');
       const stratETH = makeStrategyWidget('strategy2','strategyETH');
       window.getStrategyConfig = (which='BTC') => which==='ETH' ? stratETH.getConfig() : stratBTC.getConfig();
     })();
 
-    /* ------------ Start / Stop ------------ */
-    document.getElementById('start').onclick = () => {
-      const cfgBTC = window.getStrategyConfig('BTC');
-      const cfgETH = window.getStrategyConfig('ETH');
-      console.log('Starting algo with:', { BTC: cfgBTC, ETH: cfgETH });
-      statusEl.textContent = 'Algo Running';
-      statusEl.className = 'status running';
-    };
-    document.getElementById('stop').onclick = () => {
-      statusEl.textContent = 'Algo Stopped';
-      statusEl.className = 'status stopped';
-    };
-  </script>
-</body>
-  </html>
+    /* ===== Start / Stop (demo) ===== */
+    document.getElementById('start').oncl
