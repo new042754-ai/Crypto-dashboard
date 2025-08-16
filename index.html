@@ -160,16 +160,24 @@
 
       tvWidget.onChartReady(() => {
         const chart = tvWidget.chart();
-        if (type === 'SMA') {
-          chart.createStudy('Moving Average', false, false, [Number(p.fast)||20]);
-          chart.createStudy('Moving Average', false, false, [Number(p.slow)||50]);
-        } else if (type === 'RSI') {
-          chart.createStudy('Relative Strength Index', false, true, [Number(p.period)||14]);
-        } else if (type === 'MACD') {
-          chart.createStudy('MACD', false, true, [Number(p.fast)||12, Number(p.slow)||26, Number(p.signal)||9]);
-        } else if (type === 'VWAP') {
-          chart.createStudy('VWAP', false, false);
-        }
+
+        // a tiny delay ensures pane is ready before adding studies
+        setTimeout(() => {
+          try {
+            if (type === 'SMA') {
+              chart.createStudy('Moving Average', true,  false, [Number(p.fast)||20]);
+              chart.createStudy('Moving Average', true,  false, [Number(p.slow)||50]);
+            } else if (type === 'RSI') {
+              chart.createStudy('Relative Strength Index', false, false, [Number(p.period)||14]);
+            } else if (type === 'MACD') {
+              chart.createStudy('MACD', false, false, [Number(p.fast)||12, Number(p.slow)||26, Number(p.signal)||9]);
+            } else if (type === 'VWAP') {
+              chart.createStudy('VWAP', true, false);
+            }
+          } catch (e) {
+            console.log('Study add error:', e);
+          }
+        }, 250);
       });
     }
 
@@ -286,12 +294,10 @@
       statusEl.textContent = 'Algo Running';
       statusEl.className = 'status running';
       // TODO: backend/bot ko cfg ke saath call karo
-      // fetch('/start', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(cfg) })
     };
     document.getElementById('stop').onclick = () => {
       statusEl.textContent = 'Algo Stopped';
       statusEl.className = 'status stopped';
-      // TODO: stop call
     };
 
     // Live refresh: strategy change pe open chart re-apply
@@ -302,4 +308,4 @@
     });
   </script>
 </body>
-  </html>
+</html>
