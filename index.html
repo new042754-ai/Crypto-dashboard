@@ -136,10 +136,19 @@
       return tf==='1m' ? '1' : tf==='5m' ? '5' : tf==='15m' ? '15' : tf==='1h' ? '60' : '60';
     }
 
+    // USE studies param (reliable in TV embed) so indicators appear
     function openChart(label, symbol, cfg){
       const type = cfg?.type || 'SMA';
       const p = cfg?.params || {};
       const interval = tfToInterval(p.timeframe || '1h');
+
+      const studiesByType = {
+        SMA:  ['MASimple@tv-basicstudies','MASimple@tv-basicstudies'], // 2 MAs
+        RSI:  ['RSI@tv-basicstudies'],
+        MACD: ['MACD@tv-basicstudies'],
+        VWAP: ['VWAP@tv-basicstudies']
+      };
+      const studies = studiesByType[type] || [];
 
       overlay.classList.add('show');
       overlayTitle.textContent = label + ' — TradingView';
@@ -155,29 +164,8 @@
         container_id: "tv-container",
         locale: "en",
         withdateranges: true,
-        allow_symbol_change: false
-      });
-
-      tvWidget.onChartReady(() => {
-        const chart = tvWidget.chart();
-
-        // a tiny delay ensures pane is ready before adding studies
-        setTimeout(() => {
-          try {
-            if (type === 'SMA') {
-              chart.createStudy('Moving Average', true,  false, [Number(p.fast)||20]);
-              chart.createStudy('Moving Average', true,  false, [Number(p.slow)||50]);
-            } else if (type === 'RSI') {
-              chart.createStudy('Relative Strength Index', false, false, [Number(p.period)||14]);
-            } else if (type === 'MACD') {
-              chart.createStudy('MACD', false, false, [Number(p.fast)||12, Number(p.slow)||26, Number(p.signal)||9]);
-            } else if (type === 'VWAP') {
-              chart.createStudy('VWAP', true, false);
-            }
-          } catch (e) {
-            console.log('Study add error:', e);
-          }
-        }, 250);
+        allow_symbol_change: false,
+        studies: studies
       });
     }
 
@@ -299,13 +287,6 @@
       statusEl.textContent = 'Algo Stopped';
       statusEl.className = 'status stopped';
     };
-
-    // Live refresh: strategy change pe open chart re-apply
-    window.addEventListener('strategy:changed', ()=>{
-      if(overlay.classList.contains('show') && lastChart){
-        openChart(lastChart.label, lastChart.symbol, window.getStrategyConfig());
-      }
-    });
   </script>
 </body>
 </html>
