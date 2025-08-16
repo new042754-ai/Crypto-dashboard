@@ -25,7 +25,7 @@
     .overlay-header{display:flex;justify-content:space-between;align-items:center;background:#000;padding:10px 12px}
     #tv-container{flex:1}
 
-    /* Strategy widget */
+    /* Strategy widgets */
     .strategy-card{background:#1c1c1c;border-radius:20px;padding:16px;display:flex;flex-direction:column;align-items:center;gap:10px;box-shadow:0 10px 30px rgba(0,0,0,.45);max-width:300px;margin:18px auto}
     .strategy-title{font-weight:800;color:#ff3b3b;background:#111;padding:6px 12px;border-radius:12px;letter-spacing:.3px}
     .strategy-plus{width:70px;height:70px;border-radius:18px;border:none;background:#0f0f0f;font-size:36px;line-height:1;color:#ff3b3b;box-shadow:inset 0 0 0 2px #2a2a2a;cursor:pointer}
@@ -66,35 +66,66 @@
     <div class="price" id="price-eth">--</div>
   </div>
 
-  <!-- Strategy Widget -->
-  <div id="strategy-card" class="strategy-card">
-    <div class="strategy-title">Strategy</div>
-    <button id="open-strategy" class="strategy-plus">+</button>
-    <div id="strategy-summary" class="strategy-summary">None selected</div>
+  <!-- ===== Strategy Widget (BTC) ===== -->
+  <div id="strategy1-card" class="strategy-card">
+    <div class="strategy-title">Strategy (BTC)</div>
+    <button id="open-strategy1" class="strategy-plus">+</button>
+    <div id="strategy1-summary" class="strategy-summary">None selected</div>
   </div>
 
-  <dialog id="strategy-modal" class="strategy-modal">
-    <form method="dialog" id="strategy-form" class="strategy-form">
+  <dialog id="strategy1-modal" class="strategy-modal">
+    <form method="dialog" id="strategy1-form" class="strategy-form">
       <div class="strategy-form-header">
-        <h3>Choose Strategy</h3>
-        <button type="button" id="close-strategy" class="close-btn">×</button>
+        <h3>Choose Strategy — BTC</h3>
+        <button type="button" id="close-strategy1" class="close-btn">×</button>
       </div>
 
       <label class="row">
         <span>Type</span>
-        <select id="strategy-type">
+        <select id="strategy1-type">
           <option value="SMA">SMA Crossover</option>
           <option value="RSI">RSI</option>
           <option value="MACD">MACD</option>
           <option value="VWAP">VWAP</option>
         </select>
       </label>
-
-      <div id="params-area"></div>
+      <div id="strategy1-params"></div>
 
       <div class="actions">
         <button value="cancel" class="btn secondary">Cancel</button>
-        <button id="save-strategy" value="default" class="btn primary">Save</button>
+        <button id="save-strategy1" value="default" class="btn primary">Save</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- ===== Strategy Widget (ETH) ===== -->
+  <div id="strategy2-card" class="strategy-card">
+    <div class="strategy-title">Strategy (ETH)</div>
+    <button id="open-strategy2" class="strategy-plus">+</button>
+    <div id="strategy2-summary" class="strategy-summary">None selected</div>
+  </div>
+
+  <dialog id="strategy2-modal" class="strategy-modal">
+    <form method="dialog" id="strategy2-form" class="strategy-form">
+      <div class="strategy-form-header">
+        <h3>Choose Strategy — ETH</h3>
+        <button type="button" id="close-strategy2" class="close-btn">×</button>
+      </div>
+
+      <label class="row">
+        <span>Type</span>
+        <select id="strategy2-type">
+          <option value="SMA">SMA Crossover</option>
+          <option value="RSI">RSI</option>
+          <option value="MACD">MACD</option>
+          <option value="VWAP">VWAP</option>
+        </select>
+      </label>
+      <div id="strategy2-params"></div>
+
+      <div class="actions">
+        <button value="cancel" class="btn secondary">Cancel</button>
+        <button id="save-strategy2" value="default" class="btn primary">Save</button>
       </div>
     </form>
   </dialog>
@@ -126,7 +157,7 @@
     }
     updatePrices(); setInterval(updatePrices, 5000);
 
-    /* ----------------- TV Chart ----------------- */
+    /* ----------------- TradingView Chart ----------------- */
     const overlay = document.getElementById('overlay');
     const overlayTitle = document.getElementById('overlay-title');
     const tvContainer = document.getElementById('tv-container');
@@ -136,14 +167,14 @@
       return tf==='1m' ? '1' : tf==='5m' ? '5' : tf==='15m' ? '15' : tf==='1h' ? '60' : '60';
     }
 
-    // USE studies param (reliable in TV embed) so indicators appear
+    // TV embed: studies param se indicators reliably add hote hain
     function openChart(label, symbol, cfg){
       const type = cfg?.type || 'SMA';
       const p = cfg?.params || {};
       const interval = tfToInterval(p.timeframe || '1h');
 
       const studiesByType = {
-        SMA:  ['MASimple@tv-basicstudies','MASimple@tv-basicstudies'], // 2 MAs
+        SMA:  ['MASimple@tv-basicstudies','MASimple@tv-basicstudies'], // 2 MAs (default inputs)
         RSI:  ['RSI@tv-basicstudies'],
         MACD: ['MACD@tv-basicstudies'],
         VWAP: ['VWAP@tv-basicstudies']
@@ -171,117 +202,130 @@
 
     document.getElementById('card-btc').onclick = () => {
       lastChart = { label: 'BTC/USDT', symbol: 'BINANCE:BTCUSDT' };
-      openChart(lastChart.label, lastChart.symbol, window.getStrategyConfig());
+      openChart(lastChart.label, lastChart.symbol, window.getStrategyConfig('BTC'));
     };
     document.getElementById('card-eth').onclick = () => {
       lastChart = { label: 'ETH/USDT', symbol: 'BINANCE:ETHUSDT' };
-      openChart(lastChart.label, lastChart.symbol, window.getStrategyConfig());
+      openChart(lastChart.label, lastChart.symbol, window.getStrategyConfig('ETH'));
     };
     document.getElementById('ov-close').onclick = () => overlay.classList.remove('show');
 
-    /* ----------------- Strategy Widget ----------------- */
+    /* ----------------- Two Strategy Widgets (independent) ----------------- */
     (function(){
-      const STORAGE_KEY = 'strategyConfig';
-      const defaults = {
-        SMA:  { fast:20, slow:50, timeframe:'1m' },
-        RSI:  { period:14, overbought:70, oversold:30, timeframe:'1m' },
-        MACD: { fast:12, slow:26, signal:9, timeframe:'1m' },
-        VWAP: { session:'session', timeframe:'1m' }
-      };
+      function makeStrategyWidget(prefix, storageKey){
+        const defaults = {
+          SMA:  { fast:20, slow:50, timeframe:'1m' },
+          RSI:  { period:14, overbought:70, oversold:30, timeframe:'1m' },
+          MACD: { fast:12, slow:26, signal:9, timeframe:'1m' },
+          VWAP: { session:'session', timeframe:'1m' }
+        };
 
-      const el = {
-        open: document.getElementById('open-strategy'),
-        modal: document.getElementById('strategy-modal'),
-        close: document.getElementById('close-strategy'),
-        type: document.getElementById('strategy-type'),
-        params: document.getElementById('params-area'),
-        save: document.getElementById('save-strategy'),
-        summary: document.getElementById('strategy-summary')
-      };
+        const el = {
+          open:   document.getElementById(`open-${prefix}`),
+          modal:  document.getElementById(`${prefix}-modal`),
+          close:  document.getElementById(`close-${prefix}`),
+          type:   document.getElementById(`${prefix}-type`),
+          params: document.getElementById(`${prefix}-params`),
+          save:   document.getElementById(`save-${prefix}`),
+          summary:document.getElementById(`${prefix}-summary`)
+        };
 
-      function loadCfg(){ try{return JSON.parse(localStorage.getItem(STORAGE_KEY))||null}catch{return null} }
-      function saveCfg(cfg){ localStorage.setItem(STORAGE_KEY, JSON.stringify(cfg)); updateSummary(cfg); }
-      function updateSummary(cfg){
-        if(!cfg){ el.summary.textContent='None selected'; return; }
-        const p = Object.entries(cfg.params).map(([k,v])=>`${k}:${v}`).join(' | ');
-        el.summary.textContent = `${cfg.type} — ${p}`;
+        function loadCfg(){ try{ return JSON.parse(localStorage.getItem(storageKey)) || null }catch{ return null } }
+        function saveCfg(cfg){ localStorage.setItem(storageKey, JSON.stringify(cfg)); updateSummary(cfg); }
+
+        function updateSummary(cfg){
+          if(!cfg){ el.summary.textContent = 'None selected'; return; }
+          const p = Object.entries(cfg.params).map(([k,v])=>`${k}:${v}`).join(' | ');
+          el.summary.textContent = `${cfg.type} — ${p}`;
+        }
+
+        function renderParams(type, init){
+          const html = {
+            SMA:`<div class="param-grid">
+                   <label class="row"><span>Fast</span><input id="p-fast" type="number" min="1" value="${init.fast}"></label>
+                   <label class="row"><span>Slow</span><input id="p-slow" type="number" min="2" value="${init.slow}"></label>
+                 </div>
+                 <label class="row"><span>Timeframe</span>
+                   <select id="p-timeframe"><option>1m</option><option>5m</option><option>15m</option><option>1h</option></select>
+                 </label>`,
+            RSI:`<div class="param-grid">
+                   <label class="row"><span>Period</span><input id="p-period" type="number" min="2" value="${init.period}"></label>
+                   <label class="row"><span>Overbought</span><input id="p-ob" type="number" value="${init.overbought}"></label>
+                   <label class="row"><span>Oversold</span><input id="p-os" type="number" value="${init.oversold}"></label>
+                 </div>
+                 <label class="row"><span>Timeframe</span>
+                   <select id="p-timeframe"><option>1m</option><option>5m</option><option>15m</option><option>1h</option></select>
+                 </label>`,
+            MACD:`<div class="param-grid">
+                   <label class="row"><span>Fast</span><input id="p-fast" type="number" min="1" value="${init.fast}"></label>
+                   <label class="row"><span>Slow</span><input id="p-slow" type="number" min="2" value="${init.slow}"></label>
+                   <label class="row"><span>Signal</span><input id="p-signal" type="number" min="1" value="${init.signal}"></label>
+                 </div>
+                 <label class="row"><span>Timeframe</span>
+                   <select id="p-timeframe"><option>1m</option><option>5m</option><option>15m</option><option>1h</option></select>
+                 </label>`,
+            VWAP:`<label class="row"><span>Session</span>
+                   <select id="p-session"><option value="session">Session</option><option value="daily">Daily</option><option value="weekly">Weekly</option></select>
+                 </label>
+                 <label class="row"><span>Timeframe</span>
+                   <select id="p-timeframe"><option>1m</option><option>5m</option><option>15m</option><option>1h</option></select>
+                 </label>`
+          }[type];
+          el.params.innerHTML = html;
+          const tf = el.params.querySelector('#p-timeframe');
+          if(tf && init.timeframe) tf.value = init.timeframe;
+        }
+
+        // events
+        el.open.addEventListener('click', ()=>{
+          const cfg = loadCfg();
+          const type = cfg?.type || 'SMA';
+          el.type.value = type;
+          renderParams(type, cfg?.params || defaults[type]);
+          el.modal.showModal();
+        });
+        el.close.addEventListener('click', ()=> el.modal.close());
+        el.type.addEventListener('change', e => renderParams(e.target.value, defaults[e.target.value]));
+        el.save.addEventListener('click', (e)=>{
+          e.preventDefault();
+          const type = el.type.value;
+          const q = id => el.params.querySelector(id);
+          const params =
+            type==='SMA'  ? { fast:+q('#p-fast').value, slow:+q('#p-slow').value, timeframe:q('#p-timeframe').value } :
+            type==='RSI'  ? { period:+q('#p-period').value, overbought:+q('#p-ob').value, oversold:+q('#p-os').value, timeframe:q('#p-timeframe').value } :
+            type==='MACD' ? { fast:+q('#p-fast').value, slow:+q('#p-slow').value, signal:+q('#p-signal').value, timeframe:q('#p-timeframe').value } :
+            type==='VWAP' ? { session:q('#p-session').value, timeframe:q('#p-timeframe').value } : {};
+          const cfg = { type, params };
+          saveCfg(cfg);
+          el.modal.close();
+          window.dispatchEvent(new CustomEvent(`strategy:${storageKey}:changed`, { detail: cfg }));
+        });
+
+        // init summary
+        updateSummary(loadCfg());
+
+        // public getter
+        return {
+          getConfig: () => (loadCfg() || { type:'SMA', params: defaults.SMA })
+        };
       }
 
-      function renderParams(type, init){
-        const html = {
-          SMA:`<div class="param-grid">
-                 <label class="row"><span>Fast</span><input id="p-fast" type="number" min="1" value="${init.fast}"></label>
-                 <label class="row"><span>Slow</span><input id="p-slow" type="number" min="2" value="${init.slow}"></label>
-               </div>
-               <label class="row"><span>Timeframe</span>
-                 <select id="p-timeframe"><option>1m</option><option>5m</option><option>15m</option><option>1h</option></select>
-               </label>`,
-          RSI:`<div class="param-grid">
-                 <label class="row"><span>Period</span><input id="p-period" type="number" min="2" value="${init.period}"></label>
-                 <label class="row"><span>Overbought</span><input id="p-ob" type="number" value="${init.overbought}"></label>
-                 <label class="row"><span>Oversold</span><input id="p-os" type="number" value="${init.oversold}"></label>
-               </div>
-               <label class="row"><span>Timeframe</span>
-                 <select id="p-timeframe"><option>1m</option><option>5m</option><option>15m</option><option>1h</option></select>
-               </label>`,
-          MACD:`<div class="param-grid">
-                 <label class="row"><span>Fast</span><input id="p-fast" type="number" min="1" value="${init.fast}"></label>
-                 <label class="row"><span>Slow</span><input id="p-slow" type="number" min="2" value="${init.slow}"></label>
-                 <label class="row"><span>Signal</span><input id="p-signal" type="number" min="1" value="${init.signal}"></label>
-               </div>
-               <label class="row"><span>Timeframe</span>
-                 <select id="p-timeframe"><option>1m</option><option>5m</option><option>15m</option><option>1h</option></select>
-               </label>`,
-          VWAP:`<label class="row"><span>Session</span>
-                 <select id="p-session"><option value="session">Session</option><option value="daily">Daily</option><option value="weekly">Weekly</option></select>
-               </label>
-               <label class="row"><span>Timeframe</span>
-                 <select id="p-timeframe"><option>1m</option><option>5m</option><option>15m</option><option>1h</option></select>
-               </label>`
-        }[type];
-        el.params.innerHTML = html;
-        const tf = el.params.querySelector('#p-timeframe'); if(tf) tf.value = init.timeframe;
-      }
+      // Do widgets for BTC & ETH
+      const stratBTC = makeStrategyWidget('strategy1', 'strategyBTC');
+      const stratETH = makeStrategyWidget('strategy2', 'strategyETH');
 
-      el.open.addEventListener('click', ()=>{
-        const cfg = loadCfg();
-        const type = cfg?.type || 'SMA';
-        el.type.value = type;
-        renderParams(type, cfg?.params || defaults[type]);
-        el.modal.showModal();
-      });
-      el.close.addEventListener('click', ()=> el.modal.close());
-      el.type.addEventListener('change', (e)=> renderParams(e.target.value, defaults[e.target.value]));
-
-      el.save.addEventListener('click', (e)=>{
-        e.preventDefault();
-        const type = el.type.value;
-        const q = (id)=> el.params.querySelector(id);
-        const params =
-          type==='SMA'  ? { fast:+q('#p-fast').value, slow:+q('#p-slow').value, timeframe:q('#p-timeframe').value } :
-          type==='RSI'  ? { period:+q('#p-period').value, overbought:+q('#p-ob').value, oversold:+q('#p-os').value, timeframe:q('#p-timeframe').value } :
-          type==='MACD' ? { fast:+q('#p-fast').value, slow:+q('#p-slow').value, signal:+q('#p-signal').value, timeframe:q('#p-timeframe').value } :
-          type==='VWAP' ? { session:q('#p-session').value, timeframe:q('#p-timeframe').value } : {};
-        const cfg = { type, params };
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(cfg));
-        updateSummary(cfg);
-        el.modal.close();
-        window.dispatchEvent(new CustomEvent('strategy:changed', { detail: cfg }));
-      });
-
-      // expose getter
-      window.getStrategyConfig = ()=> loadCfg() || { type:'SMA', params: defaults.SMA };
-      // init summary
-      updateSummary(loadCfg());
+      // expose helper to get per-asset config
+      window.getStrategyConfig = (which='BTC') => which==='ETH' ? stratETH.getConfig() : stratBTC.getConfig();
     })();
 
     /* ----------------- Start / Stop ----------------- */
     document.getElementById('start').onclick = () => {
-      const cfg = window.getStrategyConfig();
-      console.log('Starting algo with strategy:', cfg);
+      const cfgBTC = window.getStrategyConfig('BTC');
+      const cfgETH = window.getStrategyConfig('ETH');
+      console.log('Starting algo with:', { BTC: cfgBTC, ETH: cfgETH });
       statusEl.textContent = 'Algo Running';
       statusEl.className = 'status running';
-      // TODO: backend/bot ko cfg ke saath call karo
+      // TODO: backend/bot ko POST: { BTC: cfgBTC, ETH: cfgETH }
     };
     document.getElementById('stop').onclick = () => {
       statusEl.textContent = 'Algo Stopped';
@@ -289,4 +333,4 @@
     };
   </script>
 </body>
-</html>
+            </html>
