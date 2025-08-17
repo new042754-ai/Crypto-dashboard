@@ -3,61 +3,54 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>JK ALGO — Market + Chart</title>
+  <title>JK ALGO — Minimal Market</title>
 
-  <!-- Your stylesheet -->
-  <link rel="stylesheet" href="style.css">
+  <!-- minimal inline styles so UI dikhe hi dikhe -->
+  <style>
+    body{margin:0;font-family:system-ui,Roboto,Arial;background:#fff;color:#111}
+    header{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid #eee}
+    h2{margin:0;font-size:18px}
+    a{color:#1a73e8;text-decoration:none}
+    main{padding:14px}
+    .page{display:none}
+    .page.active{display:block}
+    .row{display:flex;justify-content:space-between;align-items:center;border:1px solid #eee;border-radius:10px;padding:14px 16px;margin-bottom:12px}
+    .name{font-weight:600}
+    .price{font-weight:700}
+    #tv{height:60vh;border:1px solid #eee;border-radius:12px}
+    button{padding:8px 12px;border-radius:8px;border:1px solid #ddd;background:#f8f8f8}
+  </style>
 
-  <!-- TradingView library for chart -->
+  <!-- TradingView -->
   <script src="https://s3.tradingview.com/tv.js"></script>
 </head>
 <body>
 
-  <!-- Top bar -->
   <header>
-    <h2 id="pageTitle">Market</h2>
-    <nav><a href="login.html">Login</a></nav>
+    <h2 id="title">Market</h2>
+    <a href="login.html">Login</a>
   </header>
 
-  <main id="mainContent">
-    <!-- MARKET PAGE -->
-    <section class="page active" id="marketPage">
-      <div id="marketList"></div>
+  <main>
+    <!-- Market page -->
+    <section id="pgMarket" class="page active">
+      <div id="list">
+        <!-- JS will insert one BTC row here -->
+      </div>
     </section>
 
-    <!-- CHART PAGE -->
-    <section class="page" id="chartPage">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-        <button onclick="navigateTo('marketPage')">← Back</button>
-        <h3 id="chartTitle" style="margin:0">BTC/USDT</h3>
-        <span id="livePrice" style="margin-left:auto;font-weight:bold"></span>
+    <!-- Chart page -->
+    <section id="pgChart" class="page">
+      <div style="display:flex;gap:10px;align-items:center;margin-bottom:10px">
+        <button id="btnBack">← Back</button>
+        <h3 id="pair" style="margin:0">BTC/USDT</h3>
+        <span id="live" style="margin-left:auto;font-weight:bold"></span>
       </div>
-
-      <!-- timeframe tabs -->
-      <div id="tfTabs" style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap">
-        <button data-tf="1"  class="tf">1m</button>
-        <button data-tf="5"  class="tf">5m</button>
-        <button data-tf="15" class="tf active">15m</button>
-        <button data-tf="30" class="tf">30m</button>
-        <button data-tf="60" class="tf">1h</button>
-        <button data-tf="240" class="tf">4h</button>
-      </div>
-
-      <!-- Chart container -->
-      <div id="tv-container" style="height:60vh;border:1px solid #eee;border-radius:8px;"></div>
+      <div id="tv"></div>
     </section>
   </main>
 
-  <!-- Bottom nav -->
-  <div class="bottom-nav">
-    <button onclick="navigateTo('marketPage')">Home</button>
-    <button onclick="navigateTo('marketPage')">Market</button>
-    <button onclick="navigateTo('chartPage')">Trade</button>
-    <button onclick="navigateTo('marketPage')">Discover</button>
-    <button onclick="location.href='login.html'">My Account</button>
-  </div>
-
   <!-- App script -->
-  <script src="script.js"></script>
+  <script src="script.js?v=1"></script>
 </body>
-  </html>
+</html>
