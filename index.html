@@ -1,121 +1,46 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>JK ALGO - Market</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>JK ALGO — Market (Live)</title>
   <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #fff;
-      padding-bottom: 80px; /* bottom nav ke liye */
+    :root {
+      --green:#22c55e; --red:#ef4444; --muted:#666; --ink:#111; --line:#eaeaea; --accent:#111827;
     }
-    .header {
-      padding: 15px;
-      font-size: 22px;
-      font-weight: bold;
-      color: #000;
-    }
-    .tabs {
-      display: flex;
-      overflow-x: auto;
-      padding: 10px;
-      border-bottom: 1px solid #ddd;
-    }
-    .tab {
-      margin-right: 20px;
-      font-size: 14px;
-      color: #666;
-    }
-    .tab.active {
-      color: #f5b400;
-      font-weight: bold;
-      border-bottom: 2px solid #f5b400;
-    }
-    .market-list {
-      padding: 10px;
-    }
-    .coin {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 12px 0;
-      border-bottom: 1px solid #eee;
-    }
-    .coin-info {
-      display: flex;
-      align-items: center;
-    }
-    .coin-logo {
-      width: 32px;
-      height: 32px;
-      margin-right: 10px;
-    }
-    .coin-name {
-      font-size: 16px;
-      font-weight: bold;
-    }
-    .coin-percent {
-      font-size: 12px;
-      color: #666;
-    }
-    .prices {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .sell {
-      background: #ff4d4f;
-      color: #fff;
-      padding: 5px 10px;
-      border-radius: 4px;
-      font-weight: bold;
-    }
-    .buy {
-      background: #52c41a;
-      color: #fff;
-      padding: 5px 10px;
-      border-radius: 4px;
-      font-weight: bold;
-    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:#fff;color:var(--ink);padding-bottom:84px}
+
+    /* Top */
+    .header{padding:16px 16px 8px;font-size:24px;font-weight:800}
+    .tabs{display:flex;gap:18px;overflow-x:auto;padding:8px 16px;border-bottom:1px solid var(--line)}
+    .tab{white-space:nowrap;font-size:14px;color:var(--muted);padding:6px 0}
+    .tab.active{color:#f59e0b;border-bottom:2px solid #f59e0b;font-weight:700}
+
+    /* List */
+    .list{padding:6px 10px}
+    .row{display:flex;align-items:center;justify-content:space-between;padding:12px 6px;border-bottom:1px solid var(--line)}
+    .left{display:flex;align-items:center;gap:10px}
+    .logo{width:32px;height:32px;border-radius:50%;object-fit:cover}
+    .names{line-height:1.15}
+    .pair{font-weight:700}
+    .pct{font-size:12px;color:var(--muted)}
+    .right{display:flex;gap:8px;align-items:center}
+    .pill{min-width:96px;text-align:center;padding:6px 10px;border-radius:6px;color:#fff;font-weight:700}
+    .sell{background:var(--red)}
+    .buy{background:var(--green)}
+    .chip{font-size:11px;background:#fff;border:1px solid var(--line);color:#888;border-radius:10px;padding:2px 6px;margin-left:2px}
+
     /* Bottom nav */
-    .bottom-nav {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      background: #fff;
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
-      border-top: 1px solid #ccc;
-      padding: 10px 0;
-    }
-    .bottom-nav a {
-      text-decoration: none;
-      color: #555;
-      font-size: 14px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    .bottom-nav a.active {
-      color: black;
-      font-weight: bold;
-    }
-    .material-icons {
-      font-size: 26px;
-      margin-bottom: 4px;
-    }
+    .nav{position:fixed;left:0;right:0;bottom:0;height:72px;background:#fff;border-top:1px solid var(--line);display:flex;justify-content:space-around;align-items:center}
+    .nav a{display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;color:#555;font-size:13px}
+    .nav a.active{color:#000;font-weight:700}
+    .mi{font-family:'Material Icons';font-weight:normal;font-style:normal;font-size:26px;line-height:1;display:inline-block}
   </style>
-  <!-- Google Material Icons -->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 <body>
   <div class="header">Market</div>
-
-  <!-- Tabs -->
   <div class="tabs">
     <div class="tab active">Hot</div>
     <div class="tab">Favourite</div>
@@ -125,58 +50,102 @@
     <div class="tab">Indices</div>
   </div>
 
-  <!-- Market List -->
-  <div class="market-list">
-    <div class="coin">
-      <div class="coin-info">
-        <img src="https://cryptologos.cc/logos/ethereum-classic-etc-logo.png" class="coin-logo">
-        <div>
-          <div class="coin-name">ETC/USDT</div>
-          <div class="coin-percent">+0.59%</div>
-        </div>
-      </div>
-      <div class="prices">
-        <div class="sell">22.470</div>
-        <div class="buy">22.481</div>
-      </div>
-    </div>
-
-    <div class="coin">
-      <div class="coin-info">
-        <img src="https://cryptologos.cc/logos/bitcoin-btc-logo.png" class="coin-logo">
-        <div>
-          <div class="coin-name">BTC/USDT</div>
-          <div class="coin-percent">+0.01%</div>
-        </div>
-      </div>
-      <div class="prices">
-        <div class="sell">117628.00</div>
-        <div class="buy">117638.10</div>
-      </div>
-    </div>
-
-    <div class="coin">
-      <div class="coin-info">
-        <img src="https://cryptologos.cc/logos/solana-sol-logo.png" class="coin-logo">
-        <div>
-          <div class="coin-name">SOL/USDT</div>
-          <div class="coin-percent">+1.76%</div>
-        </div>
-      </div>
-      <div class="prices">
-        <div class="sell">192.36</div>
-        <div class="buy">192.41</div>
-      </div>
-    </div>
-  </div>
+  <div id="list" class="list"></div>
 
   <!-- Bottom Navigation -->
-  <div class="bottom-nav">
-    <a href="#"><span class="material-icons">home</span>Home</a>
-    <a href="#" class="active"><span class="material-icons">candlestick_chart</span>Market</a>
-    <a href="#"><span class="material-icons">description</span>Trade</a>
-    <a href="#"><span class="material-icons">explore</span>Discover</a>
-    <a href="#"><span class="material-icons">person</span>My Account</a>
-  </div>
+  <nav class="nav">
+    <a href="#"><span class="mi">home</span><span>Home</span></a>
+    <a href="#" class="active"><span class="mi">candlestick_chart</span><span>Market</span></a>
+    <a href="#"><span class="mi">description</span><span>Trade</span></a>
+    <a href="#"><span class="mi">explore</span><span>Discover</span></a>
+    <a href="#"><span class="mi">person</span><span>My Account</span></a>
+  </nav>
+
+  <script>
+    // ---------- Config: coins to show ----------
+    const COINS = [
+      {sym: 'BTCUSDT', name: 'BTC/USDT', logo: 'https://cryptologos.cc/logos/bitcoin-btc-logo.png'},
+      {sym: 'ETHUSDT', name: 'ETH/USDT', logo: 'https://cryptologos.cc/logos/ethereum-eth-logo.png'},
+      {sym: 'SOLUSDT', name: 'SOL/USDT', logo: 'https://cryptologos.cc/logos/solana-sol-logo.png'},
+      {sym: 'XRPUSDT', name: 'XRP/USDT', logo: 'https://cryptologos.cc/logos/xrp-xrp-logo.png'},
+      {sym: 'DOGEUSDT', name: 'DOGE/USDT', logo: 'https://cryptologos.cc/logos/dogecoin-doge-logo.png'},
+      {sym: 'TRXUSDT', name: 'TRX/USDT', logo: 'https://cryptologos.cc/logos/tron-trx-logo.png'},
+      {sym: 'ADAUSDT', name: 'ADA/USDT', logo: 'https://cryptologos.cc/logos/cardano-ada-logo.png'},
+      {sym: 'ETCUSDT', name: 'ETC/USDT', logo: 'https://cryptologos.cc/logos/ethereum-classic-etc-logo.png'}
+    ];
+
+    // ---------- Helpers (CORS-safe fetch with fallback) ----------
+    async function fetchJson(urls) {
+      for (const u of urls) {
+        try {
+          const r = await fetch(u, {cache: 'no-store'});
+          if (!r.ok) continue;
+          const j = await r.json();
+          return j;
+        } catch(e) {}
+      }
+      return null;
+    }
+
+    async function getBookTicker(symbol) {
+      return fetchJson([
+        `https://data.binance.com/api/v3/ticker/bookTicker?symbol=${symbol}`,
+        `https://api.binance.com/api/v3/ticker/bookTicker?symbol=${symbol}`
+      ]);
+    }
+    async function get24h(symbol) {
+      return fetchJson([
+        `https://data.binance.com/api/v3/ticker/24hr?symbol=${symbol}`,
+        `https://api.binance.com/api/v3/ticker/24hr?symbol=${symbol}`
+      ]);
+    }
+
+    // ---------- Render skeleton ----------
+    const listEl = document.getElementById('list');
+    function renderSkeleton() {
+      listEl.innerHTML = COINS.map((c, i) => `
+        <div class="row" id="row-${i}">
+          <div class="left">
+            <img class="logo" src="${c.logo}" alt="${c.name}">
+            <div class="names">
+              <div class="pair">${c.name}</div>
+              <div class="pct" id="pct-${i}">--</div>
+            </div>
+          </div>
+          <div class="right">
+            <div class="pill sell" id="sell-${i}">--</div>
+            <div class="pill buy" id="buy-${i}">--</div>
+          </div>
+        </div>
+      `).join('');
+    }
+    renderSkeleton();
+
+    // ---------- Live updater ----------
+    async function updateOnce() {
+      await Promise.all(COINS.map(async (c, i) => {
+        const [book, d24] = await Promise.all([getBookTicker(c.sym), get24h(c.sym)]);
+        // Bid/Ask
+        const bid = book?.bidPrice ? +book.bidPrice : null;
+        const ask = book?.askPrice ? +book.askPrice : null;
+        document.getElementById(`sell-${i}`).textContent = bid ? (bid.toLocaleString()) : '--';
+        document.getElementById(`buy-${i}`).textContent  = ask ? (ask.toLocaleString()) : '--';
+
+        // 24h % change
+        const pct = d24?.priceChangePercent ? Number(d24.priceChangePercent) : null;
+        const pctEl = document.getElementById(`pct-${i}`);
+        if (pct === null) {
+          pctEl.textContent = '--';
+          pctEl.style.color = '#666';
+        } else {
+          pctEl.textContent = (pct >= 0 ? '+' : '') + pct.toFixed(2) + '%';
+          pctEl.style.color = pct >= 0 ? 'var(--green)' : 'var(--red)';
+        }
+      }));
+    }
+
+    updateOnce();
+    setInterval(updateOnce, 5000);
+  </script>
 </body>
 </html>
