@@ -11,7 +11,7 @@
       padding: 0;
       font-family: Arial, sans-serif;
       color: red;
-      padding-bottom: 70px; /* bottom nav ke liye jagah */
+      padding-bottom: 80px; /* bottom nav ke liye jagah */
     }
     .header {
       text-align: center;
@@ -46,11 +46,11 @@
       justify-content: space-around;
       align-items: center;
       border-top: 1px solid #ccc;
-      padding: 8px 0;
+      padding: 10px 0;
     }
     .bottom-nav a {
       text-decoration: none;
-      color: #444;
+      color: #555;
       font-size: 14px;
       display: flex;
       flex-direction: column;
@@ -60,13 +60,13 @@
       color: black;
       font-weight: bold;
     }
-    .bottom-nav i {
-      font-size: 20px;
+    .material-icons {
+      font-size: 26px; /* icon size */
       margin-bottom: 4px;
     }
   </style>
-  <!-- FontAwesome for icons -->
-  <script src="https://kit.fontawesome.com/yourcode.js" crossorigin="anonymous"></script>
+  <!-- Google Material Icons -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 <body>
   <div class="header">JK ALGO</div>
@@ -78,11 +78,11 @@
 
   <!-- Bottom Navigation -->
   <div class="bottom-nav">
-    <a href="#"><i class="fas fa-home"></i>Home</a>
-    <a href="#"><i class="fas fa-chart-line"></i>Market</a>
-    <a href="#"><i class="fas fa-exchange-alt"></i>Trade</a>
-    <a href="#"><i class="fas fa-compass"></i>Discover</a>
-    <a href="#"><i class="fas fa-user"></i>My Account</a>
+    <a href="#"><span class="material-icons">home</span>Home</a>
+    <a href="#"><span class="material-icons">candlestick_chart</span>Market</a>
+    <a href="#"><span class="material-icons">description</span>Trade</a>
+    <a href="#"><span class="material-icons">explore</span>Discover</a>
+    <a href="#"><span class="material-icons">person</span>My Account</a>
   </div>
 </body>
 </html>
