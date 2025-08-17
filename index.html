@@ -3,23 +3,20 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>JK ALGO — Market + Chart</title>
+<title>JK ALGO — Market + Chart + Login</title>
 
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
 <script src="https://s3.tradingview.com/tv.js"></script>
 
 <style>
-:root{--green:#22c55e;--red:#ef4444;--ink:#111;--muted:#667085;--line:#eaeaea}
+:root{--green:#22c55e;--red:#ef4444;--ink:#111;--muted:#667085;--line:#eaeaea;--brand:#0ea5e9}
 *{box-sizing:border-box}
 body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:#fff;color:var(--ink);padding-bottom:84px}
-
-/* common sections */
-.page{display:none;min-height:calc(100dvh - 84px)}
-.page.show{display:block}
+.page{display:none;min-height:calc(100dvh - 84px)} .page.show{display:block}
 .header{padding:16px 16px 8px;font-size:24px;font-weight:800;border-bottom:1px solid var(--line)}
 
-/* Market */
+/* MARKET */
 .tabs{display:flex;gap:18px;overflow-x:auto;padding:8px 16px;border-bottom:1px solid var(--line)}
 .tab{white-space:nowrap;font-size:14px;color:var(--muted);padding:6px 0}
 .tab.active{color:#f59e0b;border-bottom:2px solid #f59e0b;font-weight:700}
@@ -64,13 +61,7 @@ body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-ser
 #cMain{height:100%}
 
 /* Fullscreen page-level */
-#chartView.fs .topbar,
-#chartView.fs .priceLine,
-#chartView.fs .tfTabs,
-#chartView.fs .tvToolbar,
-#chartView.fs .maLegend,
-#chartView.fs .sentiment,
-#chartView.fs .orderWrap{display:none}
+#chartView.fs .topbar,#chartView.fs .priceLine,#chartView.fs .tfTabs,#chartView.fs .tvToolbar,#chartView.fs .maLegend,#chartView.fs .sentiment,#chartView.fs .orderWrap{display:none}
 #chartView.fs .chartWrap{position:fixed;inset:0;z-index:10000;padding:0}
 #chartView.fs #cMain{height:100vh !important}
 #fsExit{display:none;position:fixed;right:12px;top:12px;z-index:10001}
@@ -94,7 +85,19 @@ body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-ser
 .aBtn{flex:1;padding:12px;border:none;border-radius:12px;font-weight:800;color:#fff;font-size:16px}
 .sellBtn{background:var(--red)} .buyBtn{background:var(--green)}
 
-/* simple center for placeholder pages */
+/* LOGIN UI */
+#loginPage .wrap{padding:22px}
+.brand{font-weight:900;font-size:28px;text-align:center;margin:16px 0 22px}
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.label{font-size:13px;color:#475467}
+.input{border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:16px}
+.rowBetween{display:flex;justify-content:space-between;align-items:center;margin:6px 2px 14px}
+.link{color:var(--brand);text-decoration:none}
+.btnPrimary{width:100%;padding:14px;border:none;border-radius:12px;background:var(--brand);color:#fff;font-weight:800;font-size:16px}
+.oauthRow{display:flex;gap:10px;margin-top:12px}
+.btnGhost{flex:1;padding:12px;border:1px solid var(--line);border-radius:12px;background:#fff}
+
+/* center helper */
 .center{display:grid;place-items:center;height:100%;color:#475467}
 </style>
 </head>
@@ -103,11 +106,43 @@ body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-ser
 <!-- HOME -->
 <section id="homePage" class="page">
   <div class="header">Home</div>
-  <div class="center">Welcome to <b>JK ALGO</b> — choose Market to start trading.</div>
+  <div class="center">Welcome to <b>JK ALGO</b>. Continue to <b>Market</b> after login.</div>
+</section>
+
+<!-- LOGIN -->
+<section id="loginPage" class="page">
+  <div class="header">Sign in</div>
+  <div class="wrap">
+    <div class="brand">JK ALGO</div>
+    <form id="loginForm">
+      <div class="field">
+        <label class="label">Email</label>
+        <input class="input" type="email" id="email" placeholder="you@example.com" required>
+      </div>
+      <div class="field">
+        <label class="label">Password</label>
+        <div style="position:relative">
+          <input class="input" type="password" id="password" placeholder="••••••••" required minlength="6">
+          <span class="mi" id="togglePw" style="position:absolute;right:12px;top:10px;cursor:pointer;color:#94a3b8">visibility</span>
+        </div>
+      </div>
+      <div class="rowBetween">
+        <label style="display:flex;align-items:center;gap:8px">
+          <input type="checkbox" id="remember"> Remember me
+        </label>
+        <a class="link" href="javascript:void(0)">Forgot?</a>
+      </div>
+      <button class="btnPrimary" type="submit">Login</button>
+    </form>
+    <div class="oauthRow">
+      <button class="btnGhost"><span class="mi">fingerprint</span>&nbsp;Biometric</button>
+      <button class="btnGhost"><span class="mi">mail</span>&nbsp;OTP</button>
+    </div>
+  </div>
 </section>
 
 <!-- MARKET -->
-<section id="marketPage" class="page show">
+<section id="marketPage" class="page">
   <div class="header">Market</div>
   <div class="tabs">
     <div class="tab active">Hot</div>
@@ -129,19 +164,22 @@ body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-ser
 <!-- ACCOUNT -->
 <section id="accountPage" class="page">
   <div class="header">My Account</div>
-  <div class="center">Login, KYC, settings — coming soon.</div>
+  <div class="center" style="padding:22px;text-align:center">
+    <div style="font-size:18px;margin-bottom:10px">Logged in as <b id="whoami">—</b></div>
+    <button id="logoutBtn" class="btnGhost" style="width:220px">Logout</button>
+  </div>
 </section>
 
 <!-- bottom nav -->
 <nav class="nav" id="bottomNav">
   <a data-route="home"><span class="mi">home</span><span>Home</span></a>
-  <a data-route="market" class="active"><span class="mi">candlestick_chart</span><span>Market</span></a>
+  <a data-route="market"><span class="mi">candlestick_chart</span><span>Market</span></a>
   <a data-route="trade"><span class="mi">description</span><span>Trade</span></a>
   <a data-route="discover"><span class="mi">explore</span><span>Discover</span></a>
   <a data-route="account"><span class="mi">person</span><span>My Account</span></a>
 </nav>
 
-<!-- CHART VIEW (overlay route) -->
+<!-- CHART VIEW -->
 <section id="chartView">
   <div class="topbar">
     <span class="mi" id="btnBack">arrow_back</span>
@@ -153,7 +191,6 @@ body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-ser
     <div class="livePct" id="livePct">--</div>
   </div>
   <div class="tfTabs" id="tfTabs"></div>
-
   <div class="tvToolbar">
     <button class="tbtn"><span class="mi">candlestick_chart</span></button>
     <button class="tbtn"><span class="mi">show_chart</span></button>
@@ -162,7 +199,6 @@ body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-ser
     <button class="tbtn" id="btnFull"><span class="mi">fullscreen</span></button>
   </div>
   <button class="tbtn" id="fsExit"><span class="mi">fullscreen_exit</span></button>
-
   <div class="maLegend">MA5 / MA10 / MA30 (TradingView में Indicators से देखें)</div>
   <div class="chartWrap"><div id="cMain"></div></div>
   <div class="sentiment">
@@ -199,241 +235,132 @@ body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-ser
 </section>
 
 <script>
-/* ===== Data setup ===== */
-const COINS = [
-  {sym:'BTCUSDT', name:'BTC/USDT', icon:'btc'},
-  {sym:'ETHUSDT', name:'ETH/USDT', icon:'eth'},
-  {sym:'SOLUSDT', name:'SOL/USDT', icon:'sol'},
-  {sym:'XRPUSDT', name:'XRP/USDT', icon:'xrp'},
-  {sym:'DOGEUSDT', name:'DOGE/USDT', icon:'doge'},
-  {sym:'TRXUSDT', name:'TRX/USDT', icon:'trx'},
-  {sym:'ADAUSDT', name:'ADA/USDT', icon:'ada'},
-  {sym:'ETCUSDT', name:'ETC/USDT', icon:'etc'}
-];
-const iconUrl = (code, size=64) => `https://cryptoicons.org/api/icon/${code}/${size}`;
-const fmt = n => (n==null? '--' : (+n).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}));
-
-async function fetchJson(urls){
-  for(const u of urls){ try{ const r=await fetch(u,{cache:'no-store'}); if(r.ok) return await r.json(); }catch(e){} }
-  return null;
+/* ========= AUTH (localStorage) ========= */
+const AUTH_KEY='auth_user';
+const Auth={
+  current(){ try{ return JSON.parse(localStorage.getItem(AUTH_KEY)||'null'); }catch(_){ return null; } },
+  login(email,remember){ const user={email,ts:Date.now()}; localStorage.setItem(AUTH_KEY,JSON.stringify(user)); if(!remember){ sessionStorage.setItem('session_only','1'); } return user; },
+  logout(){ localStorage.removeItem(AUTH_KEY); sessionStorage.removeItem('session_only'); }
+};
+function requireAuth(route){
+  const user=Auth.current();
+  // allow home & login without auth
+  if(route==='home' || route==='login') return true;
+  if(!user){ location.hash='#login'; return false; }
+  return true;
 }
-const bookUrl = s => [
-  `https://data.binance.com/api/v3/ticker/bookTicker?symbol=${s}`,
-  `https://api.binance.com/api/v3/ticker/bookTicker?symbol=${s}`
-];
-const dayUrl = s => [
-  `https://data.binance.com/api/v3/ticker/24hr?symbol=${s}`,
-  `https://api.binance.com/api/v3/ticker/24hr?symbol=${s}`
-];
-const klineUrl = (s,i,n=120) => [
-  `https://data.binance.com/api/v3/klines?symbol=${s}&interval=${i}&limit=${n}`,
-  `https://api.binance.com/api/v3/klines?symbol=${s}&interval=${i}&limit=${n}`
-];
-const depthUrl = s => [
-  `https://data.binance.com/api/v3/depth?symbol=${s}&limit=50`,
-  `https://api.binance.com/api/v3/depth?symbol=${s}&limit=50`
-];
 
-/* ===== Market render ===== */
-const list = document.getElementById('list');
-list.innerHTML = COINS.map((c,i)=>`
+/* ========= MARKET/CHART CODE (same as before) ========= */
+const COINS=[{sym:'BTCUSDT',name:'BTC/USDT',icon:'btc'},{sym:'ETHUSDT',name:'ETH/USDT',icon:'eth'},{sym:'SOLUSDT',name:'SOL/USDT',icon:'sol'},{sym:'XRPUSDT',name:'XRP/USDT',icon:'xrp'},{sym:'DOGEUSDT',name:'DOGE/USDT',icon:'doge'},{sym:'TRXUSDT',name:'TRX/USDT',icon:'trx'},{sym:'ADAUSDT',name:'ADA/USDT',icon:'ada'},{sym:'ETCUSDT',name:'ETC/USDT',icon:'etc'}];
+const iconUrl=(code,size=64)=>`https://cryptoicons.org/api/icon/${code}/${size}`;
+const fmt=n=>(n==null?'--':(+n).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}));
+async function fetchJson(urls){ for(const u of urls){ try{ const r=await fetch(u,{cache:'no-store'}); if(r.ok) return await r.json(); }catch(e){} } return null; }
+const bookUrl=s=>[`https://data.binance.com/api/v3/ticker/bookTicker?symbol=${s}`,`https://api.binance.com/api/v3/ticker/bookTicker?symbol=${s}`];
+const dayUrl =s=>[`https://data.binance.com/api/v3/ticker/24hr?symbol=${s}`,`https://api.binance.com/api/v3/ticker/24hr?symbol=${s}`];
+const klineUrl=(s,i,n=120)=>[`https://data.binance.com/api/v3/klines?symbol=${s}&interval=${i}&limit=${n}`,`https://api.binance.com/api/v3/klines?symbol=${s}&interval=${i}&limit=${n}`];
+const depthUrl=s=>[`https://data.binance.com/api/v3/depth?symbol=${s}&limit=50`,`https://api.binance.com/api/v3/depth?symbol=${s}&limit=50`];
+
+const list=document.getElementById('list');
+list.innerHTML=COINS.map((c,i)=>`
   <div class="row" onclick="openPair(${i})">
     <div class="left">
       <img class="logo" src="${iconUrl(c.icon)}" onerror="this.style.display='none'">
-      <div class="names">
-        <div class="pair">${c.name}</div>
-        <div class="pct na" id="pct-${i}">--</div>
-      </div>
+      <div class="names"><div class="pair">${c.name}</div><div class="pct na" id="pct-${i}">--</div></div>
     </div>
     <div class="spark" id="spark-${i}"></div>
-    <div class="right">
-      <div class="pill sell" id="sell-${i}">--</div>
-      <div class="pill buy" id="buy-${i}">--</div>
-    </div>
-  </div>
-`).join('');
+    <div class="right"><div class="pill sell" id="sell-${i}">--</div><div class="pill buy" id="buy-${i}">--</div></div>
+  </div>`).join('');
 
-function drawSpark(container, closes){
+function drawSpark(container,closes){
   container.innerHTML='';
-  const ch = LightweightCharts.createChart(container,{
-    layout:{background:{type:'Solid',color:'#fff'},textColor:'#555'},
-    grid:{vertLines:{color:'#fff'},horzLines:{color:'#fff'}},
-    rightPriceScale:{visible:false}, timeScale:{visible:false},
-    width:container.clientWidth, height:container.clientHeight
-  });
-  const s=ch.addLineSeries({lineWidth:2});
-  const base=Math.floor(Date.now()/1000)-closes.length*60;
-  s.setData(closes.map((v,i)=>({time:base+i*60,value:v})));
+  const ch=LightweightCharts.createChart(container,{layout:{background:{type:'Solid',color:'#fff'},textColor:'#555'},grid:{vertLines:{color:'#fff'},horzLines:{color:'#fff'}},rightPriceScale:{visible:false},timeScale:{visible:false},width:container.clientWidth,height:container.clientHeight});
+  const s=ch.addLineSeries({lineWidth:2}); const base=Math.floor(Date.now()/1000)-closes.length*60; s.setData(closes.map((v,i)=>({time:base+i*60,value:v})));
 }
 async function updateRow(c,i){
-  const [book,day,kl] = await Promise.all([
-    fetchJson(bookUrl(c.sym)), fetchJson(dayUrl(c.sym)), fetchJson(klineUrl(c.sym,'1m',120))
-  ]);
+  const [book,day,kl]=await Promise.all([fetchJson(bookUrl(c.sym)),fetchJson(dayUrl(c.sym)),fetchJson(klineUrl(c.sym,'1m',120))]);
   const bid=book?.bidPrice?+book.bidPrice:null, ask=book?.askPrice?+book.askPrice:null;
-  document.getElementById(`sell-${i}`).textContent = fmt(bid);
-  document.getElementById(`buy-${i}`).textContent  = fmt(ask);
-
+  document.getElementById(`sell-${i}`).textContent=fmt(bid);
+  document.getElementById(`buy-${i}`).textContent=fmt(ask);
   const pctEl=document.getElementById(`pct-${i}`);
-  if(day?.priceChangePercent!=null){
-    const p=+day.priceChangePercent; pctEl.textContent=(p>=0?'+':'')+p.toFixed(2)+'%';
-    pctEl.className='pct '+(p>0?'up':p<0?'down':'na');
-  } else { pctEl.textContent='--'; pctEl.className='pct na'; }
-
+  if(day?.priceChangePercent!=null){ const p=+day.priceChangePercent; pctEl.textContent=(p>=0?'+':'')+p.toFixed(2)+'%'; pctEl.className='pct '+(p>0?'up':p<0?'down':'na'); } else { pctEl.textContent='--'; pctEl.className='pct na'; }
   if(Array.isArray(kl)){ drawSpark(document.getElementById(`spark-${i}`), kl.map(k=>+k[4])); }
 }
 async function updateMarket(){ await Promise.all(COINS.map(updateRow)); }
-updateMarket(); setInterval(updateMarket, 5000);
+updateMarket(); setInterval(updateMarket,5000);
 
-/* ===== Chart view ===== */
-const cv = document.getElementById('chartView');
-const btnBack = document.getElementById('btnBack');
-const btnFull = document.getElementById('btnFull');
-const fsExit = document.getElementById('fsExit');
-btnBack.onclick = ()=>{ location.hash='#market'; };
-
+/* CHART view */
+const cv=document.getElementById('chartView'), btnBack=document.getElementById('btnBack'), btnFull=document.getElementById('btnFull'), fsExit=document.getElementById('fsExit');
+btnBack.onclick=()=>{ location.hash='#market'; };
 const pTitle=document.getElementById('pTitle'), pStats=document.getElementById('pStats');
 const livePriceEl=document.getElementById('livePrice'), livePctEl=document.getElementById('livePct');
 const tfTabs=document.getElementById('tfTabs'), cMain=document.getElementById('cMain');
-
-const TFs=['1m','5m','15m','30m','1h','4h'];
-TFs.forEach((tf,idx)=>{ const d=document.createElement('div'); d.className='tf'+(idx===2?' active':''); d.textContent=tf; d.dataset.tf=tf; tfTabs.appendChild(d); });
-
-let active={sym:'BTCUSDT', name:'BTC/USDT', tf:'15m'}, tvWidget=null;
-const tvMap = {'1m':'1','5m':'5','15m':'15','30m':'30','1h':'60','4h':'240'};
-
-function toggleFS(forceOff=false){
-  if(forceOff){ cv.classList.remove('fs'); btnFull.innerHTML='<span class="mi">fullscreen</span>'; return; }
-  cv.classList.toggle('fs');
-  btnFull.innerHTML = cv.classList.contains('fs') ? '<span class="mi">fullscreen_exit</span>' : '<span class="mi">fullscreen</span>';
-}
-btnFull.onclick=()=>toggleFS();
-fsExit.onclick =()=>toggleFS(true);
-
-function mountTV(){
-  cMain.innerHTML='<div id="tvchart" style="width:100%;height:100%"></div>';
-  tvWidget = new TradingView.widget({
-    autosize:true,
-    symbol:`BINANCE:${active.sym}`,
-    interval: tvMap[active.tf] || '15',
-    timezone:"Etc/UTC",
-    theme:"light",
-    style:"1",
-    container_id:"tvchart",
-    withdateranges:true,
-    allow_symbol_change:false
-  });
-}
-
+const TFs=['1m','5m','15m','30m','1h','4h']; TFs.forEach((tf,idx)=>{ const d=document.createElement('div'); d.className='tf'+(idx===2?' active':''); d.textContent=tf; d.dataset.tf=tf; tfTabs.appendChild(d); });
+let active={sym:'BTCUSDT',name:'BTC/USDT',tf:'15m'}, tvWidget=null;
+const tvMap={'1m':'1','5m':'5','15m':'15','30m':'30','1h':'60','4h':'240'};
+function toggleFS(forceOff=false){ if(forceOff){cv.classList.remove('fs');btnFull.innerHTML='<span class="mi">fullscreen</span>';return;} cv.classList.toggle('fs'); btnFull.innerHTML=cv.classList.contains('fs')?'<span class="mi">fullscreen_exit</span>':'<span class="mi">fullscreen</span>'; }
+btnFull.onclick=()=>toggleFS(); fsExit.onclick=()=>toggleFS(true);
+function mountTV(){ cMain.innerHTML='<div id="tvchart" style="width:100%;height:100%"></div>'; tvWidget=new TradingView.widget({autosize:true,symbol:`BINANCE:${active.sym}`,interval:tvMap[active.tf]||'15',timezone:"Etc/UTC",theme:"light",style:"1",container_id:"tvchart",withdateranges:true,allow_symbol_change:false}); }
 async function loadChart(){
-  pTitle.textContent=active.name;
-  cv.style.display='flex';
-  mountTV();
-
-  const day = await fetchJson(dayUrl(active.sym));
-  if(day){
-    livePriceEl.textContent=(+day.lastPrice).toLocaleString();
-    const pct=+day.priceChangePercent;
-    livePctEl.textContent=(pct>=0?'+':'')+pct.toFixed(2)+'%';
-    livePctEl.className='livePct '+(pct>=0?'up':'down');
-    pStats.textContent=`24h H: ${(+day.highPrice).toLocaleString()}   L: ${(+day.lowPrice).toLocaleString()}`;
-  } else {
-    livePriceEl.textContent='--'; livePctEl.textContent='--'; livePctEl.className='livePct'; pStats.textContent='24h H: --   L: --';
-  }
+  pTitle.textContent=active.name; cv.style.display='flex'; mountTV();
+  const day=await fetchJson(dayUrl(active.sym));
+  if(day){ livePriceEl.textContent=(+day.lastPrice).toLocaleString(); const pct=+day.priceChangePercent; livePctEl.textContent=(pct>=0?'+':'')+pct.toFixed(2)+'%'; livePctEl.className='livePct '+(pct>=0?'up':'down'); pStats.textContent=`24h H: ${(+day.highPrice).toLocaleString()}   L: ${(+day.lowPrice).toLocaleString()}`; }
+  else { livePriceEl.textContent='--'; livePctEl.textContent='--'; livePctEl.className='livePct'; pStats.textContent='24h H: --   L: --'; }
   updateOrderbox(); updateSentiment();
 }
-tfTabs.addEventListener('click', e=>{
-  const tf=e.target?.dataset?.tf; if(!tf) return;
-  [...tfTabs.children].forEach(x=>x.classList.remove('active')); e.target.classList.add('active');
-  active.tf=tf; mountTV();
-  location.hash = `#chart:${active.sym}:${active.tf}`;
-});
+tfTabs.addEventListener('click',e=>{ const tf=e.target?.dataset?.tf; if(!tf) return; [...tfTabs.children].forEach(x=>x.classList.remove('active')); e.target.classList.add('active'); active.tf=tf; mountTV(); location.hash=`#chart:${active.sym}:${active.tf}`; });
+window.openPair=function(i){ const c=COINS[i]; active={sym:c.sym,name:c.name,tf:'15m'}; [...tfTabs.children].forEach(x=>x.classList.remove('active')); tfTabs.children[2].classList.add('active'); toggleFS(true); location.hash=`#chart:${active.sym}:${active.tf}`; };
 
-window.openPair = function(i){
-  const c=COINS[i];
-  active={sym:c.sym, name:c.name, tf:'15m'};
-  [...tfTabs.children].forEach(x=>x.classList.remove('active')); tfTabs.children[2].classList.add('active');
-  toggleFS(true);
-  location.hash = `#chart:${active.sym}:${active.tf}`;
-};
-
-/* order + sentiment */
 const lotEl=document.getElementById('lot'), totalEl=document.getElementById('total');
 document.getElementById('minus').onclick=()=>setLot(Math.max(0,(parseFloat(lotEl.textContent)||0)-0.01));
 document.getElementById('plus').onclick =()=>setLot((parseFloat(lotEl.textContent)||0)+0.01);
 function setLot(v){ lotEl.textContent=v.toFixed(2); calcTotal(); }
-function calcTotal(){
-  const lot=parseFloat(lotEl.textContent)||0;
-  const last=parseFloat((livePriceEl.textContent||'').replace(/,/g,''))||0;
-  totalEl.textContent='Total: $'+(lot*last).toFixed(2);
-}
-async function updateOrderbox(){
-  const book = await fetchJson(bookUrl(active.sym));
-  const bid=book?.bidPrice?+book.bidPrice:null, ask=book?.askPrice?+book.askPrice:null;
-  document.getElementById('obid').textContent = fmt(bid);
-  document.getElementById('oask').textContent = fmt(ask);
-  calcTotal();
-}
-async function updateSentiment(){
-  const depth = await fetchJson(depthUrl(active.sym));
-  if(!depth){ document.getElementById('sellPct').textContent='SELL --%'; document.getElementById('buyPct').textContent='BUY --%'; return; }
-  const sum = arr=>arr.reduce((a,[p,q])=>a+(+p)*(+q),0);
-  const bidv=sum(depth.bids.slice(0,25)), askv=sum(depth.asks.slice(0,25));
-  const tot=bidv+askv||1; const buyP=Math.round(100*askv/tot), sellP=100-buyP;
-  document.getElementById('sellPct').textContent=`SELL ${sellP}%`;
-  document.getElementById('buyPct').textContent =`BUY ${buyP}%`;
-}
-setInterval(()=>{ if(cv.style.display==='flex'){ updateOrderbox(); updateSentiment(); } }, 5000);
+function calcTotal(){ const lot=parseFloat(lotEl.textContent)||0; const last=parseFloat((livePriceEl.textContent||'').replace(/,/g,''))||0; totalEl.textContent='Total: $'+(lot*last).toFixed(2); }
+async function updateOrderbox(){ const book=await fetchJson(bookUrl(active.sym)); const bid=book?.bidPrice?+book.bidPrice:null, ask=book?.askPrice?+book.askPrice:null; document.getElementById('obid').textContent=fmt(bid); document.getElementById('oask').textContent=fmt(ask); calcTotal(); }
+async function updateSentiment(){ const depth=await fetchJson(depthUrl(active.sym)); if(!depth){ document.getElementById('sellPct').textContent='SELL --%'; document.getElementById('buyPct').textContent='BUY --%'; return; } const sum=arr=>arr.reduce((a,[p,q])=>a+(+p)*(+q),0); const bidv=sum(depth.bids.slice(0,25)), askv=sum(depth.asks.slice(0,25)); const tot=bidv+askv||1; const buyP=Math.round(100*askv/tot), sellP=100-buyP; document.getElementById('sellPct').textContent=`SELL ${sellP}%`; document.getElementById('buyPct').textContent=`BUY ${buyP}%`; }
+setInterval(()=>{ if(cv.style.display==='flex'){ updateOrderbox(); updateSentiment(); } },5000);
 
-/* ===== Simple Router for bottom nav ===== */
-const pages = {
-  home: document.getElementById('homePage'),
-  market: document.getElementById('marketPage'),
-  discover: document.getElementById('discoverPage'),
-  account: document.getElementById('accountPage')
-};
-const nav = document.getElementById('bottomNav');
-nav.addEventListener('click', (e)=>{
-  const a=e.target.closest('a[data-route]'); if(!a) return;
-  const r=a.dataset.route;
-  if(r==='trade'){
-    // open chart for current pair (or BTC)
-    if(!active?.sym) active={sym:'BTCUSDT',name:'BTC/USDT',tf:'15m'};
-    location.hash=`#chart:${active.sym}:${active.tf||'15m'}`;
-  }else{
-    location.hash = `#${r}`;
-  }
-});
-function setNavActive(route){
-  [...nav.querySelectorAll('a[data-route]')].forEach(a=>{
-    a.classList.toggle('active', a.dataset.route===route || (route==='chart' && a.dataset.route==='trade') );
-  });
-}
-function showPage(key){
-  Object.values(pages).forEach(p=>p.classList.remove('show'));
-  if(pages[key]) pages[key].classList.add('show');
-}
+/* ===== Router + Nav ===== */
+const pages={home:document.getElementById('homePage'),login:document.getElementById('loginPage'),market:document.getElementById('marketPage'),discover:document.getElementById('discoverPage'),account:document.getElementById('accountPage')};
+const nav=document.getElementById('bottomNav');
+nav.addEventListener('click',(e)=>{ const a=e.target.closest('a[data-route]'); if(!a) return; const r=a.dataset.route; if(r==='trade'){ if(!requireAuth('trade')) return; if(!active?.sym) active={sym:'BTCUSDT',name:'BTC/USDT',tf:'15m'}; location.hash=`#chart:${active.sym}:${active.tf||'15m'}`; } else { location.hash=`#${r}`; } });
+function setNavActive(route){ [...nav.querySelectorAll('a[data-route]')].forEach(a=>{ a.classList.toggle('active', a.dataset.route===route || (route==='chart' && a.dataset.route==='trade')); }); }
+function showPage(key){ Object.values(pages).forEach(p=>p.classList.remove('show')); if(pages[key]) pages[key].classList.add('show'); }
+
+/* route handler */
 function applyRoute(){
-  const h = location.hash || '#market';
+  const h=location.hash||'#login';
   if(h.startsWith('#chart:')){
-    const [, rest] = h.split('#chart:'); const [sym, tf='15m'] = rest.split(':');
-    const coin = COINS.find(x=>x.sym===sym) || COINS[0];
-    active.sym = coin.sym; active.name = coin.name; active.tf = TFs.includes(tf)?tf:'15m';
-    [...tfTabs.children].forEach(x=>x.classList.remove('active'));
-    const idx = TFs.indexOf(active.tf); if(idx>=0) tfTabs.children[idx].classList.add('active');
-    showPage('market');  // keep market underlay
-    cv.style.display='flex';
-    setNavActive('chart');
-    loadChart();
+    if(!requireAuth('trade')) return;
+    const [,rest]=h.split('#chart:'); const [sym,tf='15m']=rest.split(':');
+    const coin=COINS.find(x=>x.sym===sym)||COINS[0];
+    active.sym=coin.sym; active.name=coin.name; active.tf=TFs.includes(tf)?tf:'15m';
+    [...tfTabs.children].forEach(x=>x.classList.remove('active')); const idx=TFs.indexOf(active.tf); if(idx>=0) tfTabs.children[idx].classList.add('active');
+    showPage('market'); cv.style.display='flex'; setNavActive('chart'); loadChart();
   } else {
-    cv.style.display='none';
-    toggleFS(true);
-    const route = h.replace('#','') || 'market';
-    showPage(route);
-    setNavActive(route);
+    const route=h.replace('#','')||'login';
+    if(!requireAuth(route)) return;
+    cv.style.display='none'; toggleFS(true); showPage(route); setNavActive(route);
+    if(route==='account'){ const u=Auth.current(); document.getElementById('whoami').textContent=u?.email||'—'; }
   }
 }
-window.addEventListener('hashchange', applyRoute);
-window.addEventListener('DOMContentLoaded', applyRoute);
+window.addEventListener('hashchange',applyRoute);
+window.addEventListener('DOMContentLoaded',applyRoute);
+
+/* Login form handlers */
+document.getElementById('togglePw').onclick=()=>{
+  const pw=document.getElementById('password'); const t=pw.type==='password'?'text':'password'; pw.type=t;
+  document.getElementById('togglePw').textContent=t==='password'?'visibility':'visibility_off';
+};
+document.getElementById('loginForm').addEventListener('submit',(e)=>{
+  e.preventDefault();
+  const email=document.getElementById('email').value.trim();
+  const pw=document.getElementById('password').value;
+  const remember=document.getElementById('remember').checked;
+  if(!email || pw.length<6){ alert('Enter valid email and at least 6 char password'); return; }
+  Auth.login(email,remember);
+  location.hash='#market';
+});
+document.getElementById('logoutBtn').onclick=()=>{ Auth.logout(); location.hash='#login'; };
 </script>
 </body>
-    </html>
+</html>
