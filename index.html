@@ -3,20 +3,18 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>JK ALGO — Market + Chart + Login</title>
+<title>JK ALGO — Market + Chart</title>
 
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
 <script src="https://s3.tradingview.com/tv.js"></script>
-
 <style>
 :root{--green:#22c55e;--red:#ef4444;--ink:#111;--muted:#667085;--line:#eaeaea;--brand:#0ea5e9}
 *{box-sizing:border-box}
 body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:#fff;color:var(--ink);padding-bottom:84px}
 .page{display:none;min-height:calc(100dvh - 84px)} .page.show{display:block}
 .header{padding:16px 16px 8px;font-size:24px;font-weight:800;border-bottom:1px solid var(--line)}
-
-/* MARKET */
+/* Market list UI */
 .tabs{display:flex;gap:18px;overflow-x:auto;padding:8px 16px;border-bottom:1px solid var(--line)}
 .tab{white-space:nowrap;font-size:14px;color:var(--muted);padding:6px 0}
 .tab.active{color:#f59e0b;border-bottom:2px solid #f59e0b;font-weight:700}
@@ -24,22 +22,18 @@ body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-ser
 .row{display:flex;align-items:center;justify-content:space-between;padding:12px 6px;border-bottom:1px solid var(--line);gap:10px;cursor:pointer}
 .left{display:flex;align-items:center;gap:10px;min-width:160px}
 .logo{width:32px;height:32px;border-radius:16px;background:#f3f4f6;object-fit:contain}
-.names{line-height:1.1}
-.pair{font-weight:700}
-.pct{font-size:12px}
+.names{line-height:1.1}.pair{font-weight:700}.pct{font-size:12px}
 .pct.up{color:var(--green)} .pct.down{color:var(--red)} .pct.na{color:#98a2b3}
 .spark{flex:1;min-width:120px;height:40px}
 .right{display:flex;gap:8px;align-items:center}
 .pill{width:128px;text-align:right;padding:8px 12px;border-radius:10px;color:#fff;font-weight:800;font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
 .sell{background:var(--red)} .buy{background:var(--green)}
-
 /* bottom nav */
 .nav{position:fixed;left:0;right:0;bottom:0;height:72px;background:#fff;border-top:1px solid var(--line);display:flex;justify-content:space-around;align-items:center}
 .nav a{display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;color:#555;font-size:13px}
 .nav a.active{color:#000;font-weight:700}
 .mi{font-family:'Material Icons';font-size:26px}
-
-/* CHART VIEW */
+/* Chart overlay */
 #chartView{position:fixed;inset:0;background:#fff;display:none;flex-direction:column;z-index:9999}
 .topbar{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--line)}
 .pTitle{font-weight:800;font-size:20px}
@@ -52,24 +46,21 @@ body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-ser
 .tf{padding:6px 10px;border-radius:8px;background:#f8fafc;color:#111;cursor:pointer}
 .tf.active{background:#fde68a}
 .maLegend{padding:4px 12px;font-size:12px;color:#475467}
-
-/* right toolbar + chart */
+/* toolbar + chart */
 .tvToolbar{display:flex;align-items:center;gap:8px;margin:8px 12px 0;margin-left:auto;border:1px solid var(--line);border-radius:12px;padding:6px 8px;width:max-content}
 .tbtn{display:flex;align-items:center;gap:6px;padding:6px 10px;border-radius:8px;border:1px solid #eef2f7;background:#fff;cursor:pointer;font-size:13px;color:#111}
 .tbtn .mi{font-size:18px}
 .chartWrap{height:46vh;padding:6px 8px}
 #cMain{height:100%}
-
-/* Fullscreen page-level */
+/* Fullscreen */
 #chartView.fs .topbar,#chartView.fs .priceLine,#chartView.fs .tfTabs,#chartView.fs .tvToolbar,#chartView.fs .maLegend,#chartView.fs .sentiment,#chartView.fs .orderWrap{display:none}
 #chartView.fs .chartWrap{position:fixed;inset:0;z-index:10000;padding:0}
 #chartView.fs #cMain{height:100vh !important}
 #fsExit{display:none;position:fixed;right:12px;top:12px;z-index:10001}
 #chartView.fs #fsExit{display:flex}
-
+/* order + sentiment */
 .sentiment{display:flex;margin:10px 12px;border-radius:10px;overflow:hidden;border:1px solid var(--line)}
-.sCell{flex:1;padding:8px 10px;font-weight:700}
-.sCell.sell{background:#fee2e2;color:var(--red)} .sCell.buy{background:#dcfce7;color:var(--green)}
+.sCell{flex:1;padding:8px 10px;font-weight:700}.sCell.sell{background:#fee2e2;color:var(--red)} .sCell.buy{background:#dcfce7;color:var(--green)}
 .orderWrap{padding:10px 12px}
 .orderTabs{display:flex;gap:18px;margin-bottom:8px}
 .orderTab{padding:6px 0;border-bottom:2px solid transparent;color:#475467;cursor:pointer}
@@ -84,20 +75,7 @@ body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-ser
 .btnRow{display:flex;gap:10px;margin-top:8px}
 .aBtn{flex:1;padding:12px;border:none;border-radius:12px;font-weight:800;color:#fff;font-size:16px}
 .sellBtn{background:var(--red)} .buyBtn{background:var(--green)}
-
-/* LOGIN UI */
-#loginPage .wrap{padding:22px}
-.brand{font-weight:900;font-size:28px;text-align:center;margin:16px 0 22px}
-.field{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
-.label{font-size:13px;color:#475467}
-.input{border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:16px}
-.rowBetween{display:flex;justify-content:space-between;align-items:center;margin:6px 2px 14px}
-.link{color:var(--brand);text-decoration:none}
-.btnPrimary{width:100%;padding:14px;border:none;border-radius:12px;background:var(--brand);color:#fff;font-weight:800;font-size:16px}
-.oauthRow{display:flex;gap:10px;margin-top:12px}
-.btnGhost{flex:1;padding:12px;border:1px solid var(--line);border-radius:12px;background:#fff}
-
-/* center helper */
+/* simple center */
 .center{display:grid;place-items:center;height:100%;color:#475467}
 </style>
 </head>
@@ -106,51 +84,15 @@ body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-ser
 <!-- HOME -->
 <section id="homePage" class="page">
   <div class="header">Home</div>
-  <div class="center">Welcome to <b>JK ALGO</b>. Continue to <b>Market</b> after login.</div>
-</section>
-
-<!-- LOGIN -->
-<section id="loginPage" class="page">
-  <div class="header">Sign in</div>
-  <div class="wrap">
-    <div class="brand">JK ALGO</div>
-    <form id="loginForm">
-      <div class="field">
-        <label class="label">Email</label>
-        <input class="input" type="email" id="email" placeholder="you@example.com" required>
-      </div>
-      <div class="field">
-        <label class="label">Password</label>
-        <div style="position:relative">
-          <input class="input" type="password" id="password" placeholder="••••••••" required minlength="6">
-          <span class="mi" id="togglePw" style="position:absolute;right:12px;top:10px;cursor:pointer;color:#94a3b8">visibility</span>
-        </div>
-      </div>
-      <div class="rowBetween">
-        <label style="display:flex;align-items:center;gap:8px">
-          <input type="checkbox" id="remember"> Remember me
-        </label>
-        <a class="link" href="javascript:void(0)">Forgot?</a>
-      </div>
-      <button class="btnPrimary" type="submit">Login</button>
-    </form>
-    <div class="oauthRow">
-      <button class="btnGhost"><span class="mi">fingerprint</span>&nbsp;Biometric</button>
-      <button class="btnGhost"><span class="mi">mail</span>&nbsp;OTP</button>
-    </div>
-  </div>
+  <div class="center">Welcome to <b>JK ALGO</b>. Go to Market.</div>
 </section>
 
 <!-- MARKET -->
-<section id="marketPage" class="page">
+<section id="marketPage" class="page show">
   <div class="header">Market</div>
   <div class="tabs">
-    <div class="tab active">Hot</div>
-    <div class="tab">Favourite</div>
-    <div class="tab">Forex</div>
-    <div class="tab">Crypto</div>
-    <div class="tab">Metals</div>
-    <div class="tab">Indices</div>
+    <div class="tab active">Hot</div><div class="tab">Favourite</div><div class="tab">Forex</div>
+    <div class="tab">Crypto</div><div class="tab">Metals</div><div class="tab">Indices</div>
   </div>
   <div id="list" class="list"></div>
 </section>
@@ -158,7 +100,7 @@ body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-ser
 <!-- DISCOVER -->
 <section id="discoverPage" class="page">
   <div class="header">Discover</div>
-  <div class="center">Insights & news — coming soon.</div>
+  <div class="center">Insights — coming soon.</div>
 </section>
 
 <!-- ACCOUNT -->
@@ -166,20 +108,21 @@ body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-ser
   <div class="header">My Account</div>
   <div class="center" style="padding:22px;text-align:center">
     <div style="font-size:18px;margin-bottom:10px">Logged in as <b id="whoami">—</b></div>
-    <button id="logoutBtn" class="btnGhost" style="width:220px">Logout</button>
+    <button id="logoutBtn" class="tbtn" style="width:220px"><span class="mi">logout</span>&nbsp;Logout</button>
   </div>
 </section>
 
 <!-- bottom nav -->
 <nav class="nav" id="bottomNav">
   <a data-route="home"><span class="mi">home</span><span>Home</span></a>
-  <a data-route="market"><span class="mi">candlestick_chart</span><span>Market</span></a>
+  <a data-route="market" class="active"><span class="mi">candlestick_chart</span><span>Market</span></a>
   <a data-route="trade"><span class="mi">description</span><span>Trade</span></a>
   <a data-route="discover"><span class="mi">explore</span><span>Discover</span></a>
-  <a data-route="account"><span class="mi">person</span><span>My Account</span></a>
+  <a data-route="account" id="acctTab"><span class="mi">person</span><span>My Account</span></a>
+  <a data-route="login" id="loginTab" style="display:none"><span class="mi">login</span><span>Login</span></a>
 </nav>
 
-<!-- CHART VIEW -->
+<!-- CHART OVERLAY -->
 <section id="chartView">
   <div class="topbar">
     <span class="mi" id="btnBack">arrow_back</span>
@@ -199,58 +142,41 @@ body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-ser
     <button class="tbtn" id="btnFull"><span class="mi">fullscreen</span></button>
   </div>
   <button class="tbtn" id="fsExit"><span class="mi">fullscreen_exit</span></button>
-  <div class="maLegend">MA5 / MA10 / MA30 (TradingView में Indicators से देखें)</div>
+  <div class="maLegend">MA5 / MA10 / MA30 (TradingView में Indicators से जोड़ें)</div>
   <div class="chartWrap"><div id="cMain"></div></div>
   <div class="sentiment">
     <div class="sCell sell" id="sellPct">SELL --%</div>
     <div class="sCell buy" id="buyPct">BUY --%</div>
   </div>
   <div class="orderWrap">
-    <div class="orderTabs">
-      <div class="orderTab active">Market Order</div>
-      <div class="orderTab">Pending Order</div>
-    </div>
-    <div class="orderBox">
-      <div class="lbl">Sell</div>
-      <div class="priceBox" id="obid">--</div>
-      <div class="chip">Bid</div>
-    </div>
-    <div class="orderBox buy">
-      <div class="lbl">Buy</div>
-      <div class="priceBox" id="oask">--</div>
-      <div class="chip">Ask</div>
-    </div>
-    <div class="volume">
-      <span>Volume (lot)</span>
-      <button class="volBtn" id="minus">−</button>
-      <strong id="lot">0.06</strong>
-      <button class="volBtn" id="plus">+</button>
-    </div>
+    <div class="orderTabs"><div class="orderTab active">Market Order</div><div class="orderTab">Pending Order</div></div>
+    <div class="orderBox"><div class="lbl">Sell</div><div class="priceBox" id="obid">--</div><div class="chip">Bid</div></div>
+    <div class="orderBox buy"><div class="lbl">Buy</div><div class="priceBox" id="oask">--</div><div class="chip">Ask</div></div>
+    <div class="volume"><span>Volume (lot)</span><button class="volBtn" id="minus">−</button><strong id="lot">0.06</strong><button class="volBtn" id="plus">+</button></div>
     <div class="total" id="total">Total: $0.00</div>
-    <div class="btnRow">
-      <button class="aBtn sellBtn">SELL</button>
-      <button class="aBtn buyBtn">BUY</button>
-    </div>
+    <div class="btnRow"><button class="aBtn sellBtn">SELL</button><button class="aBtn buyBtn">BUY</button></div>
   </div>
 </section>
 
 <script>
-/* ========= AUTH (localStorage) ========= */
+/* ========= AUTH GUARD ========= */
 const AUTH_KEY='auth_user';
-const Auth={
-  current(){ try{ return JSON.parse(localStorage.getItem(AUTH_KEY)||'null'); }catch(_){ return null; } },
-  login(email,remember){ const user={email,ts:Date.now()}; localStorage.setItem(AUTH_KEY,JSON.stringify(user)); if(!remember){ sessionStorage.setItem('session_only','1'); } return user; },
-  logout(){ localStorage.removeItem(AUTH_KEY); sessionStorage.removeItem('session_only'); }
-};
-function requireAuth(route){
-  const user=Auth.current();
-  // allow home & login without auth
-  if(route==='home' || route==='login') return true;
-  if(!user){ location.hash='#login'; return false; }
-  return true;
+function user(){ try{ return JSON.parse(localStorage.getItem(AUTH_KEY)||'null'); }catch(_){ return null; } }
+function ensureAuthOrRedirect(){
+  if(!user()){ window.location.href='login.html'; }
 }
+ensureAuthOrRedirect(); // if not logged in, send to login.html
 
-/* ========= MARKET/CHART CODE (same as before) ========= */
+/* ========= SHOW/HIDE Login vs Account tab ========= */
+(function(){
+  const u=user();
+  const acct=document.getElementById('acctTab');
+  const logn=document.getElementById('loginTab');
+  if(u){ acct.style.display='flex'; logn.style.display='none'; }
+  else { acct.style.display='none'; logn.style.display='flex'; }
+})();
+
+/* ========= DATA + MARKET RENDER (same as before) ========= */
 const COINS=[{sym:'BTCUSDT',name:'BTC/USDT',icon:'btc'},{sym:'ETHUSDT',name:'ETH/USDT',icon:'eth'},{sym:'SOLUSDT',name:'SOL/USDT',icon:'sol'},{sym:'XRPUSDT',name:'XRP/USDT',icon:'xrp'},{sym:'DOGEUSDT',name:'DOGE/USDT',icon:'doge'},{sym:'TRXUSDT',name:'TRX/USDT',icon:'trx'},{sym:'ADAUSDT',name:'ADA/USDT',icon:'ada'},{sym:'ETCUSDT',name:'ETC/USDT',icon:'etc'}];
 const iconUrl=(code,size=64)=>`https://cryptoicons.org/api/icon/${code}/${size}`;
 const fmt=n=>(n==null?'--':(+n).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}));
@@ -263,18 +189,19 @@ const depthUrl=s=>[`https://data.binance.com/api/v3/depth?symbol=${s}&limit=50`,
 const list=document.getElementById('list');
 list.innerHTML=COINS.map((c,i)=>`
   <div class="row" onclick="openPair(${i})">
-    <div class="left">
-      <img class="logo" src="${iconUrl(c.icon)}" onerror="this.style.display='none'">
+    <div class="left"><img class="logo" src="${iconUrl(c.icon)}" onerror="this.style.display='none'">
       <div class="names"><div class="pair">${c.name}</div><div class="pct na" id="pct-${i}">--</div></div>
     </div>
     <div class="spark" id="spark-${i}"></div>
     <div class="right"><div class="pill sell" id="sell-${i}">--</div><div class="pill buy" id="buy-${i}">--</div></div>
   </div>`).join('');
-
 function drawSpark(container,closes){
   container.innerHTML='';
-  const ch=LightweightCharts.createChart(container,{layout:{background:{type:'Solid',color:'#fff'},textColor:'#555'},grid:{vertLines:{color:'#fff'},horzLines:{color:'#fff'}},rightPriceScale:{visible:false},timeScale:{visible:false},width:container.clientWidth,height:container.clientHeight});
-  const s=ch.addLineSeries({lineWidth:2}); const base=Math.floor(Date.now()/1000)-closes.length*60; s.setData(closes.map((v,i)=>({time:base+i*60,value:v})));
+  const ch=LightweightCharts.createChart(container,{layout:{background:{type:'Solid',color:'#fff'},textColor:'#555'},
+  grid:{vertLines:{color:'#fff'},horzLines:{color:'#fff'}},rightPriceScale:{visible:false},timeScale:{visible:false},
+  width:container.clientWidth,height:container.clientHeight});
+  const s=ch.addLineSeries({lineWidth:2}); const base=Math.floor(Date.now()/1000)-closes.length*60;
+  s.setData(closes.map((v,i)=>({time:base+i*60,value:v})));
 }
 async function updateRow(c,i){
   const [book,day,kl]=await Promise.all([fetchJson(bookUrl(c.sym)),fetchJson(dayUrl(c.sym)),fetchJson(klineUrl(c.sym,'1m',120))]);
@@ -288,7 +215,7 @@ async function updateRow(c,i){
 async function updateMarket(){ await Promise.all(COINS.map(updateRow)); }
 updateMarket(); setInterval(updateMarket,5000);
 
-/* CHART view */
+/* ========= CHART VIEW (TradingView) ========= */
 const cv=document.getElementById('chartView'), btnBack=document.getElementById('btnBack'), btnFull=document.getElementById('btnFull'), fsExit=document.getElementById('fsExit');
 btnBack.onclick=()=>{ location.hash='#market'; };
 const pTitle=document.getElementById('pTitle'), pStats=document.getElementById('pStats');
@@ -319,48 +246,39 @@ async function updateOrderbox(){ const book=await fetchJson(bookUrl(active.sym))
 async function updateSentiment(){ const depth=await fetchJson(depthUrl(active.sym)); if(!depth){ document.getElementById('sellPct').textContent='SELL --%'; document.getElementById('buyPct').textContent='BUY --%'; return; } const sum=arr=>arr.reduce((a,[p,q])=>a+(+p)*(+q),0); const bidv=sum(depth.bids.slice(0,25)), askv=sum(depth.asks.slice(0,25)); const tot=bidv+askv||1; const buyP=Math.round(100*askv/tot), sellP=100-buyP; document.getElementById('sellPct').textContent=`SELL ${sellP}%`; document.getElementById('buyPct').textContent=`BUY ${buyP}%`; }
 setInterval(()=>{ if(cv.style.display==='flex'){ updateOrderbox(); updateSentiment(); } },5000);
 
-/* ===== Router + Nav ===== */
-const pages={home:document.getElementById('homePage'),login:document.getElementById('loginPage'),market:document.getElementById('marketPage'),discover:document.getElementById('discoverPage'),account:document.getElementById('accountPage')};
+/* ===== Router for bottom nav ===== */
+const pages={home:document.getElementById('homePage'),market:document.getElementById('marketPage'),discover:document.getElementById('discoverPage'),account:document.getElementById('accountPage')};
 const nav=document.getElementById('bottomNav');
-nav.addEventListener('click',(e)=>{ const a=e.target.closest('a[data-route]'); if(!a) return; const r=a.dataset.route; if(r==='trade'){ if(!requireAuth('trade')) return; if(!active?.sym) active={sym:'BTCUSDT',name:'BTC/USDT',tf:'15m'}; location.hash=`#chart:${active.sym}:${active.tf||'15m'}`; } else { location.hash=`#${r}`; } });
-function setNavActive(route){ [...nav.querySelectorAll('a[data-route]')].forEach(a=>{ a.classList.toggle('active', a.dataset.route===route || (route==='chart' && a.dataset.route==='trade')); }); }
+nav.addEventListener('click',(e)=>{
+  const a=e.target.closest('a[data-route]'); if(!a) return;
+  const r=a.dataset.route;
+  if(r==='trade'){ if(!user()){ window.location.href='login.html'; return; } if(!active?.sym) active={sym:'BTCUSDT',name:'BTC/USDT',tf:'15m'}; location.hash=`#chart:${active.sym}:${active.tf||'15m'}`; }
+  else if(r==='login'){ window.location.href='login.html'; }
+  else{ location.hash=`#${r}`; }
+});
+function setNavActive(route){
+  [...nav.querySelectorAll('a[data-route]')].forEach(a=>a.classList.toggle('active', a.dataset.route===route || (route==='chart' && a.dataset.route==='trade')));
+}
 function showPage(key){ Object.values(pages).forEach(p=>p.classList.remove('show')); if(pages[key]) pages[key].classList.add('show'); }
-
-/* route handler */
 function applyRoute(){
-  const h=location.hash||'#login';
+  const h=location.hash||'#market';
   if(h.startsWith('#chart:')){
-    if(!requireAuth('trade')) return;
+    if(!user()){ window.location.href='login.html'; return; }
     const [,rest]=h.split('#chart:'); const [sym,tf='15m']=rest.split(':');
-    const coin=COINS.find(x=>x.sym===sym)||COINS[0];
-    active.sym=coin.sym; active.name=coin.name; active.tf=TFs.includes(tf)?tf:'15m';
-    [...tfTabs.children].forEach(x=>x.classList.remove('active')); const idx=TFs.indexOf(active.tf); if(idx>=0) tfTabs.children[idx].classList.add('active');
+    const CO={BTCUSDT:'BTC/USDT',ETHUSDT:'ETH/USDT',SOLUSDT:'SOL/USDT',XRPUSDT:'XRP/USDT',DOGEUSDT:'DOGE/USDT',TRXUSDT:'TRX/USDT',ADAUSDT:'ADA/USDT',ETCUSDT:'ETC/USDT'};
+    active.sym=sym in CO?sym:'BTCUSDT'; active.name=CO[active.sym]; active.tf=['1m','5m','15m','30m','1h','4h'].includes(tf)?tf:'15m';
+    [...tfTabs.children].forEach(x=>x.classList.remove('active')); const idx=['1m','5m','15m','30m','1h','4h'].indexOf(active.tf); if(idx>=0) tfTabs.children[idx].classList.add('active');
     showPage('market'); cv.style.display='flex'; setNavActive('chart'); loadChart();
   } else {
-    const route=h.replace('#','')||'login';
-    if(!requireAuth(route)) return;
-    cv.style.display='none'; toggleFS(true); showPage(route); setNavActive(route);
-    if(route==='account'){ const u=Auth.current(); document.getElementById('whoami').textContent=u?.email||'—'; }
+    cv.style.display='none'; const route=h.replace('#','')||'market'; showPage(route); setNavActive(route);
+    if(route==='account'){ const u=user(); document.getElementById('whoami').textContent=u?.email||'—'; }
   }
 }
 window.addEventListener('hashchange',applyRoute);
 window.addEventListener('DOMContentLoaded',applyRoute);
 
-/* Login form handlers */
-document.getElementById('togglePw').onclick=()=>{
-  const pw=document.getElementById('password'); const t=pw.type==='password'?'text':'password'; pw.type=t;
-  document.getElementById('togglePw').textContent=t==='password'?'visibility':'visibility_off';
-};
-document.getElementById('loginForm').addEventListener('submit',(e)=>{
-  e.preventDefault();
-  const email=document.getElementById('email').value.trim();
-  const pw=document.getElementById('password').value;
-  const remember=document.getElementById('remember').checked;
-  if(!email || pw.length<6){ alert('Enter valid email and at least 6 char password'); return; }
-  Auth.login(email,remember);
-  location.hash='#market';
-});
-document.getElementById('logoutBtn').onclick=()=>{ Auth.logout(); location.hash='#login'; };
+/* Logout */
+document.getElementById('logoutBtn').onclick=()=>{ localStorage.removeItem('auth_user'); sessionStorage.removeItem('session_only'); window.location.href='login.html'; };
 </script>
 </body>
-</html>
+                                                              </html>
