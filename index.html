@@ -24,11 +24,23 @@
     .row{display:flex;align-items:center;justify-content:space-between;padding:12px 6px;border-bottom:1px solid var(--line);gap:10px;cursor:pointer}
     .left{display:flex;align-items:center;gap:10px;min-width:160px}
     .logo{width:32px;height:32px;border-radius:16px;background:#f3f4f6;object-fit:contain}
-    .names{line-height:1.1}.pair{font-weight:700}.pct{font-size:12px}
+    .names{line-height:1.1}
+    .pair{font-weight:700}
+    .pct{font-size:12px}
     .pct.up{color:var(--green)} .pct.down{color:var(--red)} .pct.na{color:#98a2b3}
     .spark{flex:1;min-width:120px;height:40px}
     .right{display:flex;gap:8px;align-items:center}
-    .pill{min-width:106px;text-align:center;padding:8px 12px;border-radius:10px;color:#fff;font-weight:800}
+    /* STABLE price pills */
+    .pill{
+      width:128px;                /* fixed width => no layout jump */
+      text-align:right;
+      padding:8px 12px;
+      border-radius:10px;
+      color:#fff;
+      font-weight:800;
+      font-variant-numeric: tabular-nums;   /* equal digit width */
+      font-feature-settings: "tnum";        /* backup */
+    }
     .sell{background:var(--red)} .buy{background:var(--green)}
 
     /* bottom nav */
@@ -50,6 +62,21 @@
     .tf{padding:6px 10px;border-radius:8px;background:#f8fafc;color:#111;cursor:pointer}
     .tf.active{background:#fde68a}
     .maLegend{padding:4px 12px;font-size:12px;color:#475467}
+
+    /* RIGHT-SIDE TOOLBAR BOX (custom, outside TV iframe) */
+    .tvToolbar{
+      display:flex; align-items:center; gap:8px;
+      margin:8px 12px 0; margin-left:auto;       /* push to right */
+      border:1px solid var(--line); border-radius:12px; padding:6px 8px;
+      width:max-content;
+    }
+    .tbtn{
+      display:flex; align-items:center; gap:6px;
+      padding:6px 10px; border-radius:8px; border:1px solid #eef2f7;
+      background:#fff; cursor:pointer; font-size:13px; color:#111;
+    }
+    .tbtn .mi{font-size:18px}
+
     .chartWrap{height:46vh;padding:6px 8px}
     #cMain{height:100%}
     .sentiment{display:flex;margin:10px 12px;border-radius:10px;overflow:hidden;border:1px solid var(--line)}
@@ -105,6 +132,15 @@
       <div class="livePct" id="livePct">--</div>
     </div>
     <div class="tfTabs" id="tfTabs"></div>
+
+    <!-- RIGHT-SIDE TOOLBAR BOX -->
+    <div class="tvToolbar">
+      <button class="tbtn" title="Chart type"><span class="mi">candlestick_chart</span></button>
+      <button class="tbtn" title="Area"><span class="mi">show_chart</span></button>
+      <button class="tbtn" title="Add"><span class="mi">add</span></button>
+      <button class="tbtn" title="Indicators"><span class="mi">insights</span> Indicators</button>
+    </div>
+
     <div class="maLegend">MA5 / MA10 / MA30 (TradingView में Indicators से देखें)</div>
     <div class="chartWrap"><div id="cMain"></div></div>
     <div class="sentiment">
@@ -156,7 +192,7 @@
     ];
     const iconUrl = (code, size=64) => `https://cryptoicons.org/api/icon/${code}/${size}`;
 
-    /* ==== Fetch helpers ==== */
+    /* ==== helpers ==== */
     async function fetchJson(urls){
       for(const u of urls){ try{ const r=await fetch(u,{cache:'no-store'}); if(r.ok) return await r.json(); }catch(e){} }
       return null;
@@ -178,7 +214,10 @@
       `https://api.binance.com/api/v3/depth?symbol=${s}&limit=50`
     ];
 
-    /* ==== Market list render ==== */
+    /* formatting for stable pills */
+    const fmt = n => (n==null? '--' : (+n).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}));
+
+    /* ==== Market list ==== */
     const list = document.getElementById('list');
     list.innerHTML = COINS.map((c,i)=>`
       <div class="row" onclick="openPair(${i})">
@@ -197,7 +236,6 @@
       </div>
     `).join('');
 
-    /* ==== Mini spark (lightweight line) ==== */
     function drawSpark(container, closes){
       container.innerHTML='';
       const ch = LightweightCharts.createChart(container,{
@@ -210,22 +248,25 @@
       const base=Math.floor(Date.now()/1000)-closes.length*60;
       s.setData(closes.map((v,i)=>({time:base+i*60,value:v})));
     }
+
     async function updateRow(c,i){
       const [book,day,kl] = await Promise.all([
         fetchJson(bookUrl(c.sym)), fetchJson(dayUrl(c.sym)), fetchJson(klineUrl(c.sym,'1m',120))
       ]);
       const bid=book?.bidPrice?+book.bidPrice:null, ask=book?.askPrice?+book.askPrice:null;
-      document.getElementById(`sell-${i}`).textContent = bid?bid.toLocaleString():'--';
-      document.getElementById(`buy-${i}`).textContent  = ask?ask.toLocaleString():'--';
+      document.getElementById(`sell-${i}`).textContent = fmt(bid);
+      document.getElementById(`buy-${i}`).textContent  = fmt(ask);
+
       const pctEl=document.getElementById(`pct-${i}`);
       if(day?.priceChangePercent!=null){ const p=+day.priceChangePercent; pctEl.textContent=(p>=0?'+':'')+p.toFixed(2)+'%'; pctEl.className='pct '+(p>0?'up':p<0?'down':'na');}
       else{ pctEl.textContent='--'; pctEl.className='pct na'; }
+
       if(Array.isArray(kl)){ drawSpark(document.getElementById(`spark-${i}`), kl.map(k=>+k[4])); }
     }
     async function updateMarket(){ await Promise.all(COINS.map(updateRow)); }
     updateMarket(); setInterval(updateMarket, 5000);
 
-    /* ===== CHART VIEW (TRADINGVIEW ONLY) ===== */
+    /* ===== CHART VIEW (TradingView only) ===== */
     const cv = document.getElementById('chartView');
     document.getElementById('btnBack').onclick=()=>{ cv.style.display='none'; };
 
@@ -259,7 +300,6 @@
       cv.style.display='flex';
       mountTV();
 
-      // 24h + orderbox + sentiment
       const day = await fetchJson(dayUrl(active.sym));
       if(day){
         livePriceEl.textContent=(+day.lastPrice).toLocaleString();
@@ -299,8 +339,8 @@
     async function updateOrderbox(){
       const book = await fetchJson(bookUrl(active.sym));
       const bid=book?.bidPrice?+book.bidPrice:null, ask=book?.askPrice?+book.askPrice:null;
-      document.getElementById('obid').textContent = bid?bid.toLocaleString():'--';
-      document.getElementById('oask').textContent = ask?ask.toLocaleString():'--';
+      document.getElementById('obid').textContent = fmt(bid);
+      document.getElementById('oask').textContent = fmt(ask);
       calcTotal();
     }
     async function updateSentiment(){
@@ -315,4 +355,4 @@
     setInterval(()=>{ if(cv.style.display==='flex'){ updateOrderbox(); updateSentiment(); } }, 5000);
   </script>
 </body>
-        </html>
+  </html>
