@@ -3,18 +3,19 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>JK ALGO — Market + Chart</title>
+<title>JK ALGO — Market + Account</title>
 
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
 <script src="https://s3.tradingview.com/tv.js"></script>
 <style>
-:root{--green:#22c55e;--red:#ef4444;--ink:#111;--muted:#667085;--line:#eaeaea;--brand:#0ea5e9}
+:root{--green:#22c55e;--red:#ef4444;--ink:#111827;--muted:#667085;--line:#e5e7eb;--brand:#0ea5e9;--soft:#f8fafc}
 *{box-sizing:border-box}
 body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:#fff;color:var(--ink);padding-bottom:84px}
 .page{display:none;min-height:calc(100dvh - 84px)} .page.show{display:block}
 .header{padding:16px 16px 8px;font-size:24px;font-weight:800;border-bottom:1px solid var(--line)}
-/* Market list UI */
+
+/* MARKET LIST */
 .tabs{display:flex;gap:18px;overflow-x:auto;padding:8px 16px;border-bottom:1px solid var(--line)}
 .tab{white-space:nowrap;font-size:14px;color:var(--muted);padding:6px 0}
 .tab.active{color:#f59e0b;border-bottom:2px solid #f59e0b;font-weight:700}
@@ -26,14 +27,16 @@ body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-ser
 .pct.up{color:var(--green)} .pct.down{color:var(--red)} .pct.na{color:#98a2b3}
 .spark{flex:1;min-width:120px;height:40px}
 .right{display:flex;gap:8px;align-items:center}
-.pill{width:128px;text-align:right;padding:8px 12px;border-radius:10px;color:#fff;font-weight:800;font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+.pill{width:128px;text-align:right;padding:8px 12px;border-radius:10px;color:#fff;font-weight:800;font-variant-numeric:tabular-nums}
 .sell{background:var(--red)} .buy{background:var(--green)}
-/* bottom nav */
-.nav{position:fixed;left:0;right:0;bottom:0;height:72px;background:#fff;border-top:1px solid var(--line);display:flex;justify-content:space-around;align-items:center}
+
+/* BOTTOM NAV */
+.nav{position:fixed;left:0;right:0;bottom:0;height:72px;background:#fff;border-top:1px solid var(--line);display:flex;justify-content:space-around;align-items:center;z-index:20}
 .nav a{display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;color:#555;font-size:13px}
 .nav a.active{color:#000;font-weight:700}
 .mi{font-family:'Material Icons';font-size:26px}
-/* Chart overlay */
+
+/* CHART OVERLAY */
 #chartView{position:fixed;inset:0;background:#fff;display:none;flex-direction:column;z-index:9999}
 .topbar{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--line)}
 .pTitle{font-weight:800;font-size:20px}
@@ -45,8 +48,6 @@ body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-ser
 .tfTabs{display:flex;gap:12px;overflow-x:auto;padding:6px 12px;border-bottom:1px solid var(--line)}
 .tf{padding:6px 10px;border-radius:8px;background:#f8fafc;color:#111;cursor:pointer}
 .tf.active{background:#fde68a}
-.maLegend{padding:4px 12px;font-size:12px;color:#475467}
-/* toolbar + chart */
 .tvToolbar{display:flex;align-items:center;gap:8px;margin:8px 12px 0;margin-left:auto;border:1px solid var(--line);border-radius:12px;padding:6px 8px;width:max-content}
 .tbtn{display:flex;align-items:center;gap:6px;padding:6px 10px;border-radius:8px;border:1px solid #eef2f7;background:#fff;cursor:pointer;font-size:13px;color:#111}
 .tbtn .mi{font-size:18px}
@@ -58,7 +59,9 @@ body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-ser
 #chartView.fs #cMain{height:100vh !important}
 #fsExit{display:none;position:fixed;right:12px;top:12px;z-index:10001}
 #chartView.fs #fsExit{display:flex}
-/* order + sentiment */
+.maLegend{padding:4px 12px;font-size:12px;color:#475467}
+
+/* Sentiment + Orders */
 .sentiment{display:flex;margin:10px 12px;border-radius:10px;overflow:hidden;border:1px solid var(--line)}
 .sCell{flex:1;padding:8px 10px;font-weight:700}.sCell.sell{background:#fee2e2;color:var(--red)} .sCell.buy{background:#dcfce7;color:var(--green)}
 .orderWrap{padding:10px 12px}
@@ -75,7 +78,41 @@ body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-ser
 .btnRow{display:flex;gap:10px;margin-top:8px}
 .aBtn{flex:1;padding:12px;border:none;border-radius:12px;font-weight:800;color:#fff;font-size:16px}
 .sellBtn{background:var(--red)} .buyBtn{background:var(--green)}
-/* simple center */
+
+/* ========== ACCOUNT PAGE (new) ========== */
+.profileTop{display:flex;gap:12px;align-items:center;padding:16px}
+.avatar{width:56px;height:56px;border-radius:50%;background:#edf2f7;object-fit:cover}
+.pInfo{flex:1}
+.pName{font-size:20px;font-weight:900;display:flex;align-items:center;gap:6px}
+.badge{font-size:12px;background:#e0f2fe;color:#0369a1;padding:2px 6px;border-radius:999px}
+.ref{font-size:13px;color:#6b7280;margin-top:2px;display:flex;align-items:center;gap:6px}
+.iconBtn{border:1px solid var(--line);background:#fff;border-radius:10px;width:38px;height:38px;display:grid;place-items:center}
+
+.banner{margin:0 16px 12px;padding:12px;border-radius:14px;background:#fff7ed;border:1px solid #fde68a;display:flex;justify-content:space-between;align-items:center}
+.banner .tag{font-weight:800}
+.smallGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 16px 14px}
+.smallCard{border:1px solid var(--line);background:#fff;border-radius:12px;padding:12px;display:flex;justify-content:space-between;align-items:center}
+.smallCard .left{flex-direction:column;align-items:flex-start}
+.smallCard .title{font-weight:800}
+.smallCard .sub{font-size:12px;color:#6b7280}
+
+.accTabs{display:flex;gap:18px;padding:0 16px;border-bottom:1px solid var(--line)}
+.accTab{padding:10px 4px;color:#6b7280;border-bottom:2px solid transparent;cursor:pointer}
+.accTab.active{color:#111;border-color:#111;font-weight:800}
+.balanceBox{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
+.money{font-size:28px;font-weight:900}
+.eye{cursor:pointer}
+.kv{display:flex;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--line);font-size:14px}
+.btnWideRow{display:flex;gap:14px;padding:12px 16px}
+.btnWide{flex:1;padding:12px;border:none;border-radius:12px;font-weight:900}
+.yellow{background:#facc15} .gray{background:#e5e7eb}
+
+/* List items */
+.listBox{margin-top:8px}
+.item{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid var(--line)}
+.item .l{display:flex;align-items:center;gap:10px}
+.item .icon{width:28px;height:28px;border-radius:8px;background:#f3f4f6;display:grid;place-items:center}
+.chev{color:#9ca3af}
 .center{display:grid;place-items:center;height:100%;color:#475467}
 </style>
 </head>
@@ -103,12 +140,74 @@ body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-ser
   <div class="center">Insights — coming soon.</div>
 </section>
 
-<!-- ACCOUNT -->
+<!-- ACCOUNT (new) -->
 <section id="accountPage" class="page">
   <div class="header">My Account</div>
-  <div class="center" style="padding:22px;text-align:center">
-    <div style="font-size:18px;margin-bottom:10px">Logged in as <b id="whoami">—</b></div>
-    <button id="logoutBtn" class="tbtn" style="width:220px"><span class="mi">logout</span>&nbsp;Logout</button>
+
+  <!-- top profile -->
+  <div class="profileTop">
+    <img id="avatar" class="avatar" src="https://i.pravatar.cc/100?img=12" alt="">
+    <div class="pInfo">
+      <div class="pName"><span id="accName">Guest</span> <span class="badge">Lv.1</span></div>
+      <div class="ref">Referral code: <b id="refCode">—</b>
+        <button id="copyRef" class="iconBtn" title="Copy"><span class="mi">content_copy</span></button>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="iconBtn" title="Theme"><span class="mi">dark_mode</span></button>
+      <button class="iconBtn" title="Notifications"><span class="mi">notifications</span></button>
+      <button class="iconBtn" title="Help"><span class="mi">headset_mic</span></button>
+    </div>
+  </div>
+
+  <!-- premium banner -->
+  <div class="banner">
+    <div><div class="tag">Premium</div><div style="font-size:12px;color:#6b7280">Saved <b>$0.00</b></div></div>
+    <button class="btnWide yellow" style="width:96px;border-radius:999px">Buy</button>
+  </div>
+
+  <!-- small tiles -->
+  <div class="smallGrid">
+    <div class="smallCard">
+      <div class="left"><div class="title">Activity Coupon</div><div class="sub">0 coupons</div></div>
+      <div class="icon"><span class="mi">local_offer</span></div>
+    </div>
+    <div class="smallCard">
+      <div class="left"><div class="title">Rewards Hub</div><div class="sub"><b id="coins">0</b> coins</div></div>
+      <div class="icon"><span class="mi">attach_money</span></div>
+    </div>
+  </div>
+
+  <!-- account tabs & balance -->
+  <div class="accTabs">
+    <div class="accTab active" data-tab="trade">Trading Account</div>
+    <div class="accTab" data-tab="invest">Investment Account</div>
+    <div style="margin-left:auto;color:#6b7280;padding:10px 16px"><span class="mi">info</span></div>
+  </div>
+
+  <div class="balanceBox">
+    <div class="money" id="bal">$0.27</div>
+    <span class="mi eye" id="eye">visibility</span>
+    <div style="margin-left:auto;color:#6b7280">≈ <span id="inr">₹24.30</span> INR</div>
+  </div>
+  <div class="kv"><div>Equity</div><b id="equity">$0.27</b></div>
+  <div class="kv"><div>Free Margin</div><b id="margin">$0.27</b></div>
+
+  <div class="btnWideRow">
+    <button class="btnWide gray" id="withdraw">Withdraw</button>
+    <button class="btnWide yellow" id="deposit">Deposit</button>
+  </div>
+
+  <!-- list items -->
+  <div class="listBox">
+    <div class="item"><div class="l"><div class="icon"><span class="mi">military_tech</span></div>My Level</div><div class="chev">Lv.1 <span class="mi">chevron_right</span></div></div>
+    <div class="item"><div class="l"><div class="icon"><span class="mi">rocket</span></div>MT4/MT5 Trading</div><button class="btnWide yellow" style="width:92px">Activate</button></div>
+    <div class="item"><div class="l"><div class="icon"><span class="mi">handshake</span></div>Partner</div><span class="mi chev">chevron_right</span></div>
+    <div class="item"><div class="l"><div class="icon"><span class="mi">stacked_line_chart</span></div>Investment Account</div><span class="mi chev">chevron_right</span></div>
+  </div>
+
+  <div style="padding:16px;text-align:center">
+    <button id="logoutBtn" class="tbtn"><span class="mi">logout</span>&nbsp;Logout</button>
   </div>
 </section>
 
@@ -122,7 +221,7 @@ body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-ser
   <a data-route="login" id="loginTab" style="display:none"><span class="mi">login</span><span>Login</span></a>
 </nav>
 
-<!-- CHART OVERLAY -->
+<!-- CHART OVERLAY (same as before) -->
 <section id="chartView">
   <div class="topbar">
     <span class="mi" id="btnBack">arrow_back</span>
@@ -159,24 +258,19 @@ body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-ser
 </section>
 
 <script>
-/* ========= AUTH GUARD ========= */
+/* ======= AUTH ======= */
 const AUTH_KEY='auth_user';
 function user(){ try{ return JSON.parse(localStorage.getItem(AUTH_KEY)||'null'); }catch(_){ return null; } }
-function ensureAuthOrRedirect(){
-  if(!user()){ window.location.href='login.html'; }
-}
-ensureAuthOrRedirect(); // if not logged in, send to login.html
+function ensureAuthOrRedirect(){ if(!user()){ window.location.href='login.html'; } }
+ensureAuthOrRedirect();
 
-/* ========= SHOW/HIDE Login vs Account tab ========= */
+/* show Login tab when logged out (not hit because guard redirects), kept for completeness */
 (function(){
-  const u=user();
-  const acct=document.getElementById('acctTab');
-  const logn=document.getElementById('loginTab');
-  if(u){ acct.style.display='flex'; logn.style.display='none'; }
-  else { acct.style.display='none'; logn.style.display='flex'; }
+  const u=user(); const acct=document.getElementById('acctTab'); const logn=document.getElementById('loginTab');
+  if(u){ acct.style.display='flex'; logn.style.display='none'; } else { acct.style.display='none'; logn.style.display='flex'; }
 })();
 
-/* ========= DATA + MARKET RENDER (same as before) ========= */
+/* ========= MARKET ========= */
 const COINS=[{sym:'BTCUSDT',name:'BTC/USDT',icon:'btc'},{sym:'ETHUSDT',name:'ETH/USDT',icon:'eth'},{sym:'SOLUSDT',name:'SOL/USDT',icon:'sol'},{sym:'XRPUSDT',name:'XRP/USDT',icon:'xrp'},{sym:'DOGEUSDT',name:'DOGE/USDT',icon:'doge'},{sym:'TRXUSDT',name:'TRX/USDT',icon:'trx'},{sym:'ADAUSDT',name:'ADA/USDT',icon:'ada'},{sym:'ETCUSDT',name:'ETC/USDT',icon:'etc'}];
 const iconUrl=(code,size=64)=>`https://cryptoicons.org/api/icon/${code}/${size}`;
 const fmt=n=>(n==null?'--':(+n).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}));
@@ -215,7 +309,7 @@ async function updateRow(c,i){
 async function updateMarket(){ await Promise.all(COINS.map(updateRow)); }
 updateMarket(); setInterval(updateMarket,5000);
 
-/* ========= CHART VIEW (TradingView) ========= */
+/* ========= CHART ========= */
 const cv=document.getElementById('chartView'), btnBack=document.getElementById('btnBack'), btnFull=document.getElementById('btnFull'), fsExit=document.getElementById('fsExit');
 btnBack.onclick=()=>{ location.hash='#market'; };
 const pTitle=document.getElementById('pTitle'), pStats=document.getElementById('pStats');
@@ -230,55 +324,4 @@ function mountTV(){ cMain.innerHTML='<div id="tvchart" style="width:100%;height:
 async function loadChart(){
   pTitle.textContent=active.name; cv.style.display='flex'; mountTV();
   const day=await fetchJson(dayUrl(active.sym));
-  if(day){ livePriceEl.textContent=(+day.lastPrice).toLocaleString(); const pct=+day.priceChangePercent; livePctEl.textContent=(pct>=0?'+':'')+pct.toFixed(2)+'%'; livePctEl.className='livePct '+(pct>=0?'up':'down'); pStats.textContent=`24h H: ${(+day.highPrice).toLocaleString()}   L: ${(+day.lowPrice).toLocaleString()}`; }
-  else { livePriceEl.textContent='--'; livePctEl.textContent='--'; livePctEl.className='livePct'; pStats.textContent='24h H: --   L: --'; }
-  updateOrderbox(); updateSentiment();
-}
-tfTabs.addEventListener('click',e=>{ const tf=e.target?.dataset?.tf; if(!tf) return; [...tfTabs.children].forEach(x=>x.classList.remove('active')); e.target.classList.add('active'); active.tf=tf; mountTV(); location.hash=`#chart:${active.sym}:${active.tf}`; });
-window.openPair=function(i){ const c=COINS[i]; active={sym:c.sym,name:c.name,tf:'15m'}; [...tfTabs.children].forEach(x=>x.classList.remove('active')); tfTabs.children[2].classList.add('active'); toggleFS(true); location.hash=`#chart:${active.sym}:${active.tf}`; };
-
-const lotEl=document.getElementById('lot'), totalEl=document.getElementById('total');
-document.getElementById('minus').onclick=()=>setLot(Math.max(0,(parseFloat(lotEl.textContent)||0)-0.01));
-document.getElementById('plus').onclick =()=>setLot((parseFloat(lotEl.textContent)||0)+0.01);
-function setLot(v){ lotEl.textContent=v.toFixed(2); calcTotal(); }
-function calcTotal(){ const lot=parseFloat(lotEl.textContent)||0; const last=parseFloat((livePriceEl.textContent||'').replace(/,/g,''))||0; totalEl.textContent='Total: $'+(lot*last).toFixed(2); }
-async function updateOrderbox(){ const book=await fetchJson(bookUrl(active.sym)); const bid=book?.bidPrice?+book.bidPrice:null, ask=book?.askPrice?+book.askPrice:null; document.getElementById('obid').textContent=fmt(bid); document.getElementById('oask').textContent=fmt(ask); calcTotal(); }
-async function updateSentiment(){ const depth=await fetchJson(depthUrl(active.sym)); if(!depth){ document.getElementById('sellPct').textContent='SELL --%'; document.getElementById('buyPct').textContent='BUY --%'; return; } const sum=arr=>arr.reduce((a,[p,q])=>a+(+p)*(+q),0); const bidv=sum(depth.bids.slice(0,25)), askv=sum(depth.asks.slice(0,25)); const tot=bidv+askv||1; const buyP=Math.round(100*askv/tot), sellP=100-buyP; document.getElementById('sellPct').textContent=`SELL ${sellP}%`; document.getElementById('buyPct').textContent=`BUY ${buyP}%`; }
-setInterval(()=>{ if(cv.style.display==='flex'){ updateOrderbox(); updateSentiment(); } },5000);
-
-/* ===== Router for bottom nav ===== */
-const pages={home:document.getElementById('homePage'),market:document.getElementById('marketPage'),discover:document.getElementById('discoverPage'),account:document.getElementById('accountPage')};
-const nav=document.getElementById('bottomNav');
-nav.addEventListener('click',(e)=>{
-  const a=e.target.closest('a[data-route]'); if(!a) return;
-  const r=a.dataset.route;
-  if(r==='trade'){ if(!user()){ window.location.href='login.html'; return; } if(!active?.sym) active={sym:'BTCUSDT',name:'BTC/USDT',tf:'15m'}; location.hash=`#chart:${active.sym}:${active.tf||'15m'}`; }
-  else if(r==='login'){ window.location.href='login.html'; }
-  else{ location.hash=`#${r}`; }
-});
-function setNavActive(route){
-  [...nav.querySelectorAll('a[data-route]')].forEach(a=>a.classList.toggle('active', a.dataset.route===route || (route==='chart' && a.dataset.route==='trade')));
-}
-function showPage(key){ Object.values(pages).forEach(p=>p.classList.remove('show')); if(pages[key]) pages[key].classList.add('show'); }
-function applyRoute(){
-  const h=location.hash||'#market';
-  if(h.startsWith('#chart:')){
-    if(!user()){ window.location.href='login.html'; return; }
-    const [,rest]=h.split('#chart:'); const [sym,tf='15m']=rest.split(':');
-    const CO={BTCUSDT:'BTC/USDT',ETHUSDT:'ETH/USDT',SOLUSDT:'SOL/USDT',XRPUSDT:'XRP/USDT',DOGEUSDT:'DOGE/USDT',TRXUSDT:'TRX/USDT',ADAUSDT:'ADA/USDT',ETCUSDT:'ETC/USDT'};
-    active.sym=sym in CO?sym:'BTCUSDT'; active.name=CO[active.sym]; active.tf=['1m','5m','15m','30m','1h','4h'].includes(tf)?tf:'15m';
-    [...tfTabs.children].forEach(x=>x.classList.remove('active')); const idx=['1m','5m','15m','30m','1h','4h'].indexOf(active.tf); if(idx>=0) tfTabs.children[idx].classList.add('active');
-    showPage('market'); cv.style.display='flex'; setNavActive('chart'); loadChart();
-  } else {
-    cv.style.display='none'; const route=h.replace('#','')||'market'; showPage(route); setNavActive(route);
-    if(route==='account'){ const u=user(); document.getElementById('whoami').textContent=u?.email||'—'; }
-  }
-}
-window.addEventListener('hashchange',applyRoute);
-window.addEventListener('DOMContentLoaded',applyRoute);
-
-/* Logout */
-document.getElementById('logoutBtn').onclick=()=>{ localStorage.removeItem('auth_user'); sessionStorage.removeItem('session_only'); window.location.href='login.html'; };
-</script>
-</body>
-                                                              </html>
+  if(day){ livePriceEl.textCo
