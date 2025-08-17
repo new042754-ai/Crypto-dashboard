@@ -3,39 +3,42 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Login — JK ALGO</title>
+<title>Auth — JK ALGO</title>
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 <style>
 :root{--line:#e5e7eb;--ink:#0f172a;--muted:#64748b;--brand:#0ea5e9}
 *{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:linear-gradient(135deg,#0b1220,#0e1a32)}
 .container{min-height:100dvh;display:grid;place-items:center;padding:20px}
-.card{width:100%;max-width:360px;background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:0 10px 30px rgba(2,6,23,.25);padding:22px}
+.card{width:100%;max-width:380px;background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:0 10px 30px rgba(2,6,23,.25);padding:22px}
 .brand{font-weight:900;font-size:26px;text-align:center;margin:6px 0 18px;color:#0f172a}
 .field{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
 .label{font-size:13px;color:var(--muted)}
-.input{border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:16px}
+.input{border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:16px;width:100%}
 .row{display:flex;justify-content:space-between;align-items:center;margin:6px 2px 14px}
 .btnPrimary{width:100%;padding:14px;border:none;border-radius:12px;background:var(--brand);color:#fff;font-weight:800;font-size:16px;cursor:pointer}
 .help{margin-top:12px;text-align:center;font-size:13px;color:var(--muted)}
-a{color:var(--brand);text-decoration:none}
+a{color:var(--brand);text-decoration:none;cursor:pointer}
 .eye{position:absolute;right:12px;top:10px;cursor:pointer;color:#94a3b8}
 .footer{margin-top:14px;text-align:center}
+.hidden{display:none}
 </style>
 </head>
 <body>
 <div class="container">
   <div class="card">
     <div class="brand">JK ALGO</div>
+    
+    <!-- LOGIN FORM -->
     <form id="loginForm">
       <div class="field">
         <label class="label">Email</label>
-        <input class="input" type="email" id="email" placeholder="you@example.com" required>
+        <input class="input" type="email" id="loginEmail" placeholder="you@example.com" required>
       </div>
       <div class="field">
         <label class="label">Password</label>
         <div style="position:relative">
-          <input class="input" type="password" id="password" placeholder="••••••••" minlength="6" required>
-          <span class="material-icons eye" id="togglePw">visibility</span>
+          <input class="input" type="password" id="loginPassword" placeholder="••••••••" minlength="6" required>
+          <span class="material-icons eye" id="toggleLoginPw">visibility</span>
         </div>
       </div>
       <div class="row">
@@ -45,31 +48,82 @@ a{color:var(--brand);text-decoration:none}
         <a href="#">Forgot?</a>
       </div>
       <button class="btnPrimary" type="submit">Login</button>
+      <div class="help">Don’t have an account? <a id="showSignup">Sign up</a></div>
     </form>
-    <div class="help">Don’t have an account? <a href="#">Sign up</a></div>
+
+    <!-- SIGNUP FORM -->
+    <form id="signupForm" class="hidden">
+      <div class="field">
+        <label class="label">Full Name</label>
+        <input class="input" type="text" id="signupName" placeholder="John Doe" required>
+      </div>
+      <div class="field">
+        <label class="label">Email</label>
+        <input class="input" type="email" id="signupEmail" placeholder="you@example.com" required>
+      </div>
+      <div class="field">
+        <label class="label">Password</label>
+        <div style="position:relative">
+          <input class="input" type="password" id="signupPassword" placeholder="Create password" minlength="6" required>
+          <span class="material-icons eye" id="toggleSignupPw">visibility</span>
+        </div>
+      </div>
+      <div class="field">
+        <label class="label">Confirm Password</label>
+        <input class="input" type="password" id="signupConfirm" placeholder="Repeat password" minlength="6" required>
+      </div>
+      <button class="btnPrimary" type="submit">Sign Up</button>
+      <div class="help">Already have an account? <a id="showLogin">Login</a></div>
+    </form>
+
     <div class="footer"><a href="index.html">← Back to site</a></div>
   </div>
 </div>
 
 <script>
 const AUTH_KEY='auth_user';
-document.getElementById('togglePw').onclick=()=>{
-  const pw=document.getElementById('password');
-  const t=pw.type==='password'?'text':'password';
-  pw.type=t; document.getElementById('togglePw').textContent=t==='password'?'visibility':'visibility_off';
+
+// toggle visibility
+document.getElementById('toggleLoginPw').onclick=()=>{
+  const pw=document.getElementById('loginPassword');
+  pw.type = pw.type==='password'?'text':'password';
 };
-document.getElementById('loginForm').addEventListener('submit',(e)=>{
+document.getElementById('toggleSignupPw').onclick=()=>{
+  const pw=document.getElementById('signupPassword');
+  pw.type = pw.type==='password'?'text':'password';
+};
+
+// switch login/signup
+document.getElementById('showSignup').onclick=()=>{
+  document.getElementById('loginForm').classList.add('hidden');
+  document.getElementById('signupForm').classList.remove('hidden');
+};
+document.getElementById('showLogin').onclick=()=>{
+  document.getElementById('signupForm').classList.add('hidden');
+  document.getElementById('loginForm').classList.remove('hidden');
+};
+
+// login submit
+document.getElementById('loginForm').addEventListener('submit',e=>{
   e.preventDefault();
-  const email=document.getElementById('email').value.trim();
-  const pw=document.getElementById('password').value;
-  const remember=document.getElementById('remember').checked;
-  if(!email || pw.length<6){ alert('Enter valid email and at least 6 characters password'); return; }
-  const user={email,ts:Date.now()};
-  localStorage.setItem(AUTH_KEY, JSON.stringify(user));
-  // optional: session-only (clear on tab close)
-  if(!remember) sessionStorage.setItem('session_only','1');
-  // go to app
-  window.location.href = 'index.html#market';
+  const email=document.getElementById('loginEmail').value.trim();
+  const pw=document.getElementById('loginPassword').value;
+  if(!email||pw.length<6){alert("Invalid credentials");return;}
+  localStorage.setItem(AUTH_KEY, JSON.stringify({email,ts:Date.now()}));
+  window.location.href='index.html#market';
+});
+
+// signup submit (demo)
+document.getElementById('signupForm').addEventListener('submit',e=>{
+  e.preventDefault();
+  const name=document.getElementById('signupName').value.trim();
+  const email=document.getElementById('signupEmail').value.trim();
+  const pw=document.getElementById('signupPassword').value;
+  const confirm=document.getElementById('signupConfirm').value;
+  if(!name||!email||pw.length<6||pw!==confirm){alert("Please check details");return;}
+  // save as new user (demo: just localStorage)
+  localStorage.setItem(AUTH_KEY, JSON.stringify({name,email,ts:Date.now()}));
+  window.location.href='index.html#market';
 });
 </script>
 </body>
