@@ -24,10 +24,26 @@
       flex: 1;
       text-align: center;
       font-size: 28px;
+      color: white; /* JK ALGO white */
     }
     .side {
       width: 100px;
       text-align: center;
+    }
+    .content {
+      display: flex;
+      justify-content: space-between;
+      padding: 20px;
+    }
+    .box {
+      width: 48%;
+      height: 300px;
+      border: 2px dashed red;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 22px;
+      font-weight: bold;
     }
   </style>
 </head>
@@ -36,6 +52,11 @@
     <div class="side">Chatrs</div>
     <div class="title">JK ALGO</div>
     <div class="side">Position</div>
+  </div>
+
+  <div class="content">
+    <div class="box">Charts</div>
+    <div class="box">Position</div>
   </div>
 </body>
 </html>
