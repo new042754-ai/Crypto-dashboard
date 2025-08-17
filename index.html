@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>JK ALGO — Market + Chart</title>
+  <title>JK ALGO — Market + TV Chart</title>
 
-  <!-- Icons + Charts libs -->
+  <!-- Icons + libs -->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
   <script src="https://s3.tradingview.com/tv.js"></script>
@@ -24,9 +24,7 @@
     .row{display:flex;align-items:center;justify-content:space-between;padding:12px 6px;border-bottom:1px solid var(--line);gap:10px;cursor:pointer}
     .left{display:flex;align-items:center;gap:10px;min-width:160px}
     .logo{width:32px;height:32px;border-radius:16px;background:#f3f4f6;object-fit:contain}
-    .names{line-height:1.1}
-    .pair{font-weight:700}
-    .pct{font-size:12px}
+    .names{line-height:1.1}.pair{font-weight:700}.pct{font-size:12px}
     .pct.up{color:var(--green)} .pct.down{color:var(--red)} .pct.na{color:#98a2b3}
     .spark{flex:1;min-width:120px;height:40px}
     .right{display:flex;gap:8px;align-items:center}
@@ -107,7 +105,7 @@
       <div class="livePct" id="livePct">--</div>
     </div>
     <div class="tfTabs" id="tfTabs"></div>
-    <div class="maLegend">MA5 — <span style="color:#d946ef">•</span> &nbsp; MA10 — <span style="color:#60a5fa">•</span> &nbsp; MA30 — <span style="color:#f59e0b">•</span></div>
+    <div class="maLegend">MA5 / MA10 / MA30 (TradingView में Indicators से देखें)</div>
     <div class="chartWrap"><div id="cMain"></div></div>
     <div class="sentiment">
       <div class="sCell sell" id="sellPct">SELL --%</div>
@@ -158,11 +156,9 @@
     ];
     const iconUrl = (code, size=64) => `https://cryptoicons.org/api/icon/${code}/${size}`;
 
-    /* ==== CORS-safe fetch helpers ==== */
+    /* ==== Fetch helpers ==== */
     async function fetchJson(urls){
-      for(const u of urls){
-        try{ const r = await fetch(u,{cache:'no-store'}); if(r.ok) return await r.json(); }catch(e){}
-      }
+      for(const u of urls){ try{ const r=await fetch(u,{cache:'no-store'}); if(r.ok) return await r.json(); }catch(e){} }
       return null;
     }
     const bookUrl = s => [
@@ -173,7 +169,7 @@
       `https://data.binance.com/api/v3/ticker/24hr?symbol=${s}`,
       `https://api.binance.com/api/v3/ticker/24hr?symbol=${s}`
     ];
-    const klineUrl = (s,i,n=300) => [
+    const klineUrl = (s,i,n=120) => [
       `https://data.binance.com/api/v3/klines?symbol=${s}&interval=${i}&limit=${n}`,
       `https://api.binance.com/api/v3/klines?symbol=${s}&interval=${i}&limit=${n}`
     ];
@@ -182,7 +178,7 @@
       `https://api.binance.com/api/v3/depth?symbol=${s}&limit=50`
     ];
 
-    /* ==== MARKET LIST (skeleton) ==== */
+    /* ==== Market list render ==== */
     const list = document.getElementById('list');
     list.innerHTML = COINS.map((c,i)=>`
       <div class="row" onclick="openPair(${i})">
@@ -201,7 +197,7 @@
       </div>
     `).join('');
 
-    /* ==== Mini sparklines ==== */
+    /* ==== Mini spark (lightweight line) ==== */
     function drawSpark(container, closes){
       container.innerHTML='';
       const ch = LightweightCharts.createChart(container,{
@@ -214,122 +210,78 @@
       const base=Math.floor(Date.now()/1000)-closes.length*60;
       s.setData(closes.map((v,i)=>({time:base+i*60,value:v})));
     }
-
     async function updateRow(c,i){
       const [book,day,kl] = await Promise.all([
         fetchJson(bookUrl(c.sym)), fetchJson(dayUrl(c.sym)), fetchJson(klineUrl(c.sym,'1m',120))
       ]);
-      const bid = book?.bidPrice?+book.bidPrice:null;
-      const ask = book?.askPrice?+book.askPrice:null;
-      document.getElementById(`sell-${i}`).textContent = bid ? bid.toLocaleString() : '--';
-      document.getElementById(`buy-${i}`).textContent  = ask ? ask.toLocaleString() : '--';
-
-      const pctEl = document.getElementById(`pct-${i}`);
-      if(day?.priceChangePercent!=null){
-        const p=+day.priceChangePercent;
-        pctEl.textContent=(p>=0?'+':'')+p.toFixed(2)+'%';
-        pctEl.className='pct '+(p>0?'up':p<0?'down':'na');
-      } else { pctEl.textContent='--'; pctEl.className='pct na'; }
-
+      const bid=book?.bidPrice?+book.bidPrice:null, ask=book?.askPrice?+book.askPrice:null;
+      document.getElementById(`sell-${i}`).textContent = bid?bid.toLocaleString():'--';
+      document.getElementById(`buy-${i}`).textContent  = ask?ask.toLocaleString():'--';
+      const pctEl=document.getElementById(`pct-${i}`);
+      if(day?.priceChangePercent!=null){ const p=+day.priceChangePercent; pctEl.textContent=(p>=0?'+':'')+p.toFixed(2)+'%'; pctEl.className='pct '+(p>0?'up':p<0?'down':'na');}
+      else{ pctEl.textContent='--'; pctEl.className='pct na'; }
       if(Array.isArray(kl)){ drawSpark(document.getElementById(`spark-${i}`), kl.map(k=>+k[4])); }
     }
     async function updateMarket(){ await Promise.all(COINS.map(updateRow)); }
     updateMarket(); setInterval(updateMarket, 5000);
 
-    /* ===== CHART VIEW ===== */
+    /* ===== CHART VIEW (TRADINGVIEW ONLY) ===== */
     const cv = document.getElementById('chartView');
     document.getElementById('btnBack').onclick=()=>{ cv.style.display='none'; };
 
-    const pTitle = document.getElementById('pTitle');
-    const pStats = document.getElementById('pStats');
-    const livePriceEl = document.getElementById('livePrice');
-    const livePctEl = document.getElementById('livePct');
-    const tfTabs = document.getElementById('tfTabs');
+    const pTitle=document.getElementById('pTitle'), pStats=document.getElementById('pStats');
+    const livePriceEl=document.getElementById('livePrice'), livePctEl=document.getElementById('livePct');
+    const tfTabs=document.getElementById('tfTabs'), cMain=document.getElementById('cMain');
 
-    // timeframe tabs
-    ['1m','5m','15m','30m','1h','4h'].forEach((tf,idx)=>{
-      const d=document.createElement('div'); d.className='tf'+(idx===2?' active':''); d.textContent=tf; d.dataset.tf=tf; tfTabs.appendChild(d);
-    });
-    tfTabs.addEventListener('click', e=>{
-      const tf = e.target?.dataset?.tf; if(!tf) return;
-      [...tfTabs.children].forEach(x=>x.classList.remove('active')); e.target.classList.add('active');
-      active.tf=tf; loadChart();
-    });
+    const TFs=['1m','5m','15m','30m','1h','4h'];
+    TFs.forEach((tf,idx)=>{ const d=document.createElement('div'); d.className='tf'+(idx===2?' active':''); d.textContent=tf; d.dataset.tf=tf; tfTabs.appendChild(d); });
 
-    let mainChart, candleSeries, ma5, ma10, ma30;
-    let active={sym:'BTCUSDT', name:'BTC/USDT', tf:'15m'};
+    let active={sym:'BTCUSDT', name:'BTC/USDT', tf:'15m'}, tvWidget=null;
+    const tvMap = {'1m':'1','5m':'5','15m':'15','30m':'30','1h':'60','4h':'240'};
 
-    function makeChart(){
-      const wrap=document.getElementById('cMain'); wrap.innerHTML='';
-      mainChart = LightweightCharts.createChart(wrap,{
-        layout:{background:{type:'Solid',color:'#fff'},textColor:'#111'},
-        grid:{vertLines:{color:'#f5f5f5'},horzLines:{color:'#f5f5f5'}},
-        rightPriceScale:{borderColor:'#e5e7eb'}, timeScale:{borderColor:'#e5e7eb'}
-      });
-      candleSeries = mainChart.addCandlestickSeries({
-        upColor:'#22c55e',downColor:'#ef4444',
-        borderUpColor:'#22c55e',borderDownColor:'#ef4444',
-        wickUpColor:'#22c55e',wickDownColor:'#ef4444'
-      });
-      ma5  = mainChart.addLineSeries({color:'#d946ef',lineWidth:2});
-      ma10 = mainChart.addLineSeries({color:'#60a5fa',lineWidth:2});
-      ma30 = mainChart.addLineSeries({color:'#f59e0b',lineWidth:2});
-    }
-    function SMA(vals,p){ const out=[]; let s=0; for(let i=0;i<vals.length;i++){ s+=vals[i]; if(i>=p) s-=vals[i-p]; if(i>=p-1) out.push({i,value:s/p}); } return out; }
-
-    /* ---- TV fallback helper ---- */
-    function renderTV(container, tvSymbol, interval="15"){
-      container.innerHTML='<div id="tv-fb" style="width:100%;height:100%"></div>';
-      new TradingView.widget({
-        autosize:true, symbol: tvSymbol, interval: interval,
-        timezone:"Etc/UTC", theme:"light", style:"1",
-        container_id:"tv-fb", withdateranges:true, allow_symbol_change:false
+    function mountTV(){
+      cMain.innerHTML='<div id="tvchart" style="width:100%;height:100%"></div>';
+      tvWidget = new TradingView.widget({
+        autosize:true,
+        symbol:`BINANCE:${active.sym}`,
+        interval: tvMap[active.tf] || '15',
+        timezone:"Etc/UTC",
+        theme:"light",
+        style:"1",
+        container_id:"tvchart",
+        withdateranges:true,
+        allow_symbol_change:false
       });
     }
 
     async function loadChart(){
-      pTitle.textContent = active.name;
+      pTitle.textContent=active.name;
       cv.style.display='flex';
-      makeChart();
+      mountTV();
 
-      const tfTV = { '1m':'1','5m':'5','15m':'15','30m':'30','1h':'60','4h':'240' };
-
-      try{
-        const [day,kl] = await Promise.all([
-          fetchJson(dayUrl(active.sym)),
-          fetchJson(klineUrl(active.sym, active.tf, 400))
-        ]);
-
-        if(!day || !Array.isArray(kl) || kl.length===0){
-          renderTV(document.getElementById('cMain'), `BINANCE:${active.sym}`, tfTV[active.tf]||'15');
-          livePriceEl.textContent='--'; livePctEl.textContent='--'; livePctEl.className='livePct'; pStats.textContent='24h H: --   L: --';
-          return;
-        }
-
-        const candles = kl.map(k=>({time:Math.floor(k[0]/1000), open:+k[1], high:+k[2], low:+k[3], close:+k[4]}));
-        candleSeries.setData(candles);
-        const closes = candles.map(c=>c.close);
-        ma5.setData (SMA(closes,5 ).map(o=>({time:candles[o.i].time,value:o.value})));
-        ma10.setData(SMA(closes,10).map(o=>({time:candles[o.i].time,value:o.value})));
-        ma30.setData(SMA(closes,30).map(o=>({time:candles[o.i].time,value:o.value})));
-        mainChart.timeScale().fitContent();
-
-        livePriceEl.textContent = (+day.lastPrice).toLocaleString();
+      // 24h + orderbox + sentiment
+      const day = await fetchJson(dayUrl(active.sym));
+      if(day){
+        livePriceEl.textContent=(+day.lastPrice).toLocaleString();
         const pct=+day.priceChangePercent;
         livePctEl.textContent=(pct>=0?'+':'')+pct.toFixed(2)+'%';
         livePctEl.className='livePct '+(pct>=0?'up':'down');
-        pStats.textContent = `24h H: ${(+day.highPrice).toLocaleString()}   L: ${(+day.lowPrice).toLocaleString()}`;
-
-        updateOrderbox(); updateSentiment();
-
-      }catch(err){
-        renderTV(document.getElementById('cMain'), `BINANCE:${active.sym}`, '15');
+        pStats.textContent=`24h H: ${(+day.highPrice).toLocaleString()}   L: ${(+day.lowPrice).toLocaleString()}`;
+      } else {
+        livePriceEl.textContent='--'; livePctEl.textContent='--'; livePctEl.className='livePct'; pStats.textContent='24h H: --   L: --';
       }
+      updateOrderbox(); updateSentiment();
     }
 
+    tfTabs.addEventListener('click', e=>{
+      const tf=e.target?.dataset?.tf; if(!tf) return;
+      [...tfTabs.children].forEach(x=>x.classList.remove('active')); e.target.classList.add('active');
+      active.tf=tf; mountTV();
+    });
+
     window.openPair = async function(i){
-      active.sym = COINS[i].sym; active.name = COINS[i].name;
-      [...tfTabs.children].forEach(x=>x.classList.remove('active')); tfTabs.children[2].classList.add('active'); active.tf='15m';
+      active.sym=COINS[i].sym; active.name=COINS[i].name; active.tf='15m';
+      [...tfTabs.children].forEach(x=>x.classList.remove('active')); tfTabs.children[2].classList.add('active');
       await loadChart();
     };
 
@@ -346,7 +298,7 @@
 
     async function updateOrderbox(){
       const book = await fetchJson(bookUrl(active.sym));
-      const bid = book?.bidPrice?+book.bidPrice:null, ask = book?.askPrice?+book.askPrice:null;
+      const bid=book?.bidPrice?+book.bidPrice:null, ask=book?.askPrice?+book.askPrice:null;
       document.getElementById('obid').textContent = bid?bid.toLocaleString():'--';
       document.getElementById('oask').textContent = ask?ask.toLocaleString():'--';
       calcTotal();
@@ -360,7 +312,7 @@
       document.getElementById('sellPct').textContent=`SELL ${sellP}%`;
       document.getElementById('buyPct').textContent =`BUY ${buyP}%`;
     }
-    setInterval(()=>{ if(document.getElementById('chartView').style.display==='flex'){ updateOrderbox(); updateSentiment(); } }, 5000);
+    setInterval(()=>{ if(cv.style.display==='flex'){ updateOrderbox(); updateSentiment(); } }, 5000);
   </script>
 </body>
-</html>
+        </html>
