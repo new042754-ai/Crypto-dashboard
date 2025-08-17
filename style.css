@@ -1,0 +1,38 @@
+/* General Reset */
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
+body{background:#fff;color:#333;display:flex;flex-direction:column;min-height:100vh}
+
+/* Header */
+header{background:#f8f8f8;padding:12px;text-align:center;border-bottom:1px solid #ddd}
+header h2{font-size:18px}
+
+/* Main */
+main{flex:1;padding:15px}
+.page{display:none}
+.page.active{display:block}
+
+/* Market List */
+.market-row{display:flex;justify-content:space-between;padding:10px;border-bottom:1px solid #eee}
+.market-row span{font-size:14px}
+.red{color:red}
+.green{color:green}
+
+/* Trade Buttons */
+.trade-buttons{display:flex;justify-content:space-around;margin-top:15px}
+.trade-buttons button{flex:1;margin:0 5px;padding:12px;font-size:16px;border:none;border-radius:6px;cursor:pointer}
+.trade-buttons .sell{background:red;color:#fff}
+.trade-buttons .buy{background:green;color:#fff}
+
+/* Forms */
+form{display:flex;flex-direction:column;gap:10px;margin-top:20px}
+form input{padding:10px;border:1px solid #ccc;border-radius:5px}
+form button{padding:12px;background:#007bff;border:none;color:#fff;border-radius:6px;cursor:pointer}
+
+/* Account Info */
+#accountInfo{background:#f9f9f9;padding:15px;border-radius:8px}
+#accountInfo p{margin-bottom:8px}
+
+/* Bottom Navigation */
+.bottom-nav{display:flex;justify-content:space-around;padding:10px 0;border-top:1px solid #ddd;background:#fff;position:fixed;bottom:0;width:100%}
+.bottom-nav button{flex:1;background:none;border:none;font-size:14px;cursor:pointer;padding:8px 0}
+.bottom-nav button:hover{color:#007bff}
