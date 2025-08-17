@@ -1,249 +1,310 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Crypto Algo Dashboard</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #111;
-      color: white;
-      margin: 0;
-      padding: 0;
-      text-align: center;
-    }
-    header {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      padding: 10px;
-      background-color: #222;
-    }
-    button {
-      padding: 10px 20px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-    .btn-btc, .btn-eth { background-color: #333; color: white; }
-    .btn-start { background-color: green; color: white; }
-    .btn-stop { background-color: brown; color: white; }
-    .status { margin: 10px 0; font-weight: bold; }
-    .status.stopped { color: red; }
-    .status.running { color: green; }
-    .price-card {
-      background: #222;
-      padding: 15px;
-      border-radius: 8px;
-      margin: 10px auto;
-      width: 250px;
-    }
-    .price { font-size: 1.5em; margin-top: 5px; }
-    .strategy-card {
-      background: #222;
-      padding: 15px;
-      border-radius: 8px;
-      margin: 10px auto;
-      width: 300px;
-    }
-    .strategy-card h3 { margin: 0 0 10px; color: red; }
-    .add-btn {
-      background: #111;
-      border: 1px solid red;
-      border-radius: 8px;
-      padding: 20px;
-      cursor: pointer;
-      font-size: 20px;
-    }
-    /* Overlay */
-    .overlay {
-      display: none;
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: rgba(0,0,0,0.95);
-      z-index: 9999;
-      flex-direction: column;
-    }
-    .overlay.show { display: flex; }
-    .overlay-header {
-      display: flex; justify-content: space-between;
-      align-items: center; background: #000;
-      padding: 10px; color: white;
-    }
-    #tv-container { flex: 1; }
-    /* Modal */
-    .modal {
-      display: none;
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: rgba(0,0,0,0.8);
-      z-index: 10000;
-      justify-content: center; align-items: center;
-    }
-    .modal-content {
-      background: #222; padding: 20px;
-      border-radius: 8px; width: 300px;
-      text-align: left;
-    }
-    .modal-content h2 { margin-top: 0; }
-    .modal-content label { display: block; margin: 10px 0 5px; }
-    .modal-content input, .modal-content select {
-      width: 100%; padding: 8px; margin-bottom: 10px;
-    }
-    .modal-content button { margin-top: 10px; }
+    body{font-family:Arial,sans-serif;background:#111;color:#fff;margin:0;text-align:center}
+    header{display:flex;justify-content:center;gap:10px;padding:10px;background:#222;position:sticky;top:0;z-index:10}
+    button{padding:10px 20px;border:none;border-radius:6px;cursor:pointer;font-weight:700}
+    .btn-btc,.btn-eth{background:#333;color:#fff}.btn-start{background:green;color:#fff}.btn-stop{background:brown;color:#fff}
+    .status{margin:10px 0;font-weight:700}.status.stopped{color:#ff3b3b}.status.running{color:#16a34a}
+    .card{background:#222;padding:16px;border-radius:14px;margin:12px auto;width:min(92vw,420px);box-shadow:0 10px 24px rgba(0,0,0,.35)}
+    .price{font-size:1.6em;margin-top:6px}
+    .strategy-card{background:#1b1b1b;padding:16px;border-radius:18px;margin:18px auto;width:min(92vw,560px);box-shadow:0 10px 28px rgba(0,0,0,.45)}
+    .strategy-title{font-weight:800;color:#ff3b3b;background:#111;padding:6px 12px;border-radius:12px;display:inline-block;margin-bottom:8px}
+    .plus{display:flex;justify-content:center;align-items:center;height:70px;border-radius:14px;background:#0f0f0f;border:2px solid #ff3b3b;font-size:34px;cursor:pointer}
+    .summary{color:#bbb;font-size:13px;margin-top:8px}
+    /* Overlay chart */
+    .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:9999;flex-direction:column}
+    .overlay.show{display:flex}
+    .overlay-header{display:flex;justify-content:space-between;align-items:center;background:#000;padding:10px 14px}
+    #chart-main{height:58vh}#chart-ind{height:22vh;border-top:1px solid #222}
+    .wrap{display:flex;flex-direction:column;gap:0;flex:1}
+    /* Modal (native <dialog>) */
+    dialog::backdrop{background:rgba(0,0,0,.6)}
+    dialog{border:none;border-radius:18px;background:#111;color:#eee;width:min(92vw,560px)}
+    .form{padding:16px}.row{display:flex;gap:12px;align-items:center;margin:10px 0}
+    .row span{color:#bbb}.row input,.row select{flex:1;background:#181818;border:1px solid #2a2a2a;border-radius:10px;color:#eee;padding:8px}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .actions{display:flex;justify-content:flex-end;gap:10px;margin-top:12px}
+    .btn{padding:10px 14px;border:none;border-radius:10px;cursor:pointer}.primary{background:#16a34a}.secondary{background:#333;color:#ddd}
   </style>
 </head>
 <body>
 
-<header>
-  <button class="btn-btc" id="btn-btc">BTC</button>
-  <button class="btn-eth" id="btn-eth">ETH</button>
-  <button class="btn-start" id="start">Start</button>
-  <button class="btn-stop" id="stop">Stop</button>
-</header>
+  <header>
+    <button class="btn-btc" id="btn-btc">BTC</button>
+    <button class="btn-eth" id="btn-eth">ETH</button>
+    <button class="btn-start" id="start">Start</button>
+    <button class="btn-stop" id="stop">Stop</button>
+  </header>
 
-<div id="algo-status" class="status stopped">Algo Stopped</div>
+  <div id="algo-status" class="status stopped">Algo Stopped</div>
 
-<div class="price-card">
-  <div>BTC</div>
-  <div class="price" id="price-btc">--</div>
-</div>
-
-<div class="price-card">
-  <div>ETH</div>
-  <div class="price" id="price-eth">--</div>
-</div>
-
-<!-- Strategy Boxes -->
-<div class="strategy-card">
-  <h3>Strategy (BTC)</h3>
-  <div class="add-btn" onclick="openStrategyModal('BTC')">+</div>
-  <div id="strategy-btc">None selected</div>
-</div>
-
-<div class="strategy-card">
-  <h3>Strategy (ETH)</h3>
-  <div class="add-btn" onclick="openStrategyModal('ETH')">+</div>
-  <div id="strategy-eth">None selected</div>
-</div>
-
-<!-- Chart overlay -->
-<div class="overlay" id="overlay">
-  <div class="overlay-header">
-    <span id="overlay-title"></span>
-    <button id="ov-close">Close</button>
+  <div class="card" id="card-btc" style="cursor:pointer">
+    <div>BTC</div>
+    <div class="price" id="price-btc">--</div>
+    <div style="font-size:12px;color:#aaa;margin-top:6px">Tap to open chart</div>
   </div>
-  <div id="tv-container"></div>
-</div>
 
-<!-- Strategy Modal -->
-<div class="modal" id="strategy-modal">
-  <div class="modal-content">
-    <h2 id="modal-title">Choose Strategy</h2>
-    <label>Type</label>
-    <select id="str-type">
-      <option value="sma">SMA Crossover</option>
-      <option value="ema">EMA Crossover</option>
-      <option value="rsi">RSI</option>
-    </select>
-    <label>Fast</label>
-    <input type="number" id="str-fast" value="9">
-    <label>Slow</label>
-    <input type="number" id="str-slow" value="21">
-    <label>Timeframe</label>
-    <select id="str-timeframe">
-      <option value="1m">1m</option>
-      <option value="5m">5m</option>
-      <option value="15m">15m</option>
-      <option value="1h">1h</option>
-    </select>
-    <button onclick="saveStrategy()">Save</button>
-    <button onclick="closeStrategyModal()">Cancel</button>
+  <div class="card" id="card-eth" style="cursor:pointer">
+    <div>ETH</div>
+    <div class="price" id="price-eth">--</div>
+    <div style="font-size:12px;color:#aaa;margin-top:6px">Tap to open chart</div>
   </div>
-</div>
 
-<script src="https://s3.tradingview.com/tv.js"></script>
-<script>
-  const statusEl = document.getElementById('algo-status');
-  let currentSymbol = "BTCUSDT";
-  let currentCoin = "BTC";
-  let activeChart = null;
+  <!-- Strategy (BTC) -->
+  <div class="strategy-card">
+    <div class="strategy-title">Strategy (BTC)</div>
+    <div class="plus" id="open-btc">+</div>
+    <div class="summary" id="sum-btc">None selected</div>
+  </div>
 
-  document.getElementById('start').onclick = () => {
-    statusEl.textContent = 'Algo Running';
-    statusEl.className = 'status running';
-  };
-  document.getElementById('stop').onclick = () => {
-    statusEl.textContent = 'Algo Stopped';
-    statusEl.className = 'status stopped';
-  };
+  <!-- Strategy (ETH) -->
+  <div class="strategy-card">
+    <div class="strategy-title">Strategy (ETH)</div>
+    <div class="plus" id="open-eth">+</div>
+    <div class="summary" id="sum-eth">None selected</div>
+  </div>
 
-  // Price updates
-  async function fetchPrice(symbol, el) {
-    try {
-      const res = await fetch(`https://data.binance.com/api/v3/ticker/price?symbol=${symbol}`);
-      const data = await res.json();
-      el.textContent = `$${parseFloat(data.price).toLocaleString()}`;
-    } catch (e) { el.textContent = '--'; }
-  }
-  function updatePrices() {
-    fetchPrice('BTCUSDT', document.getElementById('price-btc'));
-    fetchPrice('ETHUSDT', document.getElementById('price-eth'));
-  }
-  updatePrices();
-  setInterval(updatePrices, 5000);
+  <!-- Strategy modal -->
+  <dialog id="dlg">
+    <form method="dialog" class="form" id="form">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <h3 id="dlg-title" style="margin:0">Choose Strategy</h3>
+        <button type="button" id="dlg-close" class="btn secondary">✕</button>
+      </div>
 
-  // Chart Overlay
-  const overlay = document.getElementById('overlay');
-  const overlayTitle = document.getElementById('overlay-title');
-  const tvContainer = document.getElementById('tv-container');
+      <label class="row">
+        <span>Type</span>
+        <select id="type">
+          <option value="SMA">SMA Crossover</option>
+          <option value="RSI">RSI</option>
+          <option value="MACD">MACD</option>
+          <option value="VWAP">VWAP</option>
+        </select>
+      </label>
 
-  function openChart(label, symbol) {
-    overlay.classList.add('show');
-    overlayTitle.textContent = label + ' — Custom Chart';
-    tvContainer.innerHTML = '';
-    new TradingView.widget({
-      autosize: true,
-      symbol: symbol,
-      interval: "15",
-      timezone: "Etc/UTC",
-      theme: "dark",
-      style: "1",
-      container_id: "tv-container",
-      locale: "en",
-      withdateranges: true,
-      allow_symbol_change: false,
-      studies: ["MASimple@tv-basicstudies"] // basic indicator
+      <div id="params"></div>
+
+      <div class="actions">
+        <button class="btn secondary" value="cancel">Cancel</button>
+        <button class="btn primary" id="save" value="default">Save</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Chart overlay -->
+  <div class="overlay" id="overlay">
+    <div class="overlay-header">
+      <span id="ov-title"></span>
+      <button id="ov-close" class="btn secondary">Close</button>
+    </div>
+    <div class="wrap">
+      <div id="chart-main"></div>
+      <div id="chart-ind"></div>
+    </div>
+  </div>
+
+  <!-- Lightweight Charts -->
+  <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+  <script>
+    /* ===== Status ===== */
+    const statusEl = document.getElementById('algo-status');
+    document.getElementById('start').onclick = ()=>{ statusEl.textContent='Algo Running'; statusEl.className='status running'; };
+    document.getElementById('stop').onclick  = ()=>{ statusEl.textContent='Algo Stopped'; statusEl.className='status stopped';  };
+
+    /* ===== Live Prices (CORS-safe) ===== */
+    async function getPrice(sym){
+      const urls = [
+        `https://data.binance.com/api/v3/ticker/price?symbol=${sym}`,
+        `https://api.binance.com/api/v3/ticker/price?symbol=${sym}`
+      ];
+      for(const u of urls){
+        try{
+          const r = await fetch(u, {cache:'no-store'});
+          if(!r.ok) continue;
+          const {price} = await r.json();
+          return +price;
+        }catch(_){}
+      }
+      return null;
+    }
+    async function updatePrices(){
+      const btc = await getPrice('BTCUSDT');
+      const eth = await getPrice('ETHUSDT');
+      document.getElementById('price-btc').textContent = btc ? `$${btc.toLocaleString()}` : '--';
+      document.getElementById('price-eth').textContent = eth ? `$${eth.toLocaleString()}` : '--';
+    }
+    updatePrices(); setInterval(updatePrices, 5000);
+
+    /* ===== Strategy widgets (localStorage per coin) ===== */
+    const DEFAULTS = {
+      BTC: { type:'SMA',  params:{ fast:9, slow:21, timeframe:'1m' } },
+      ETH: { type:'SMA',  params:{ fast:9, slow:21, timeframe:'1m' } }
+    };
+    function loadCfg(asset){ try{ return JSON.parse(localStorage.getItem('STRAT_'+asset)) || DEFAULTS[asset]; } catch{ return DEFAULTS[asset]; } }
+    function saveCfg(asset,cfg){ localStorage.setItem('STRAT_'+asset, JSON.stringify(cfg)); renderSummary(asset); }
+    function renderSummary(asset){
+      const cfg = loadCfg(asset);
+      const txt = Object.entries(cfg.params).map(([k,v])=>`${k}:${v}`).join(' | ');
+      document.getElementById(asset==='BTC'?'sum-btc':'sum-eth').textContent = `${cfg.type} — ${txt}`;
+    }
+    renderSummary('BTC'); renderSummary('ETH');
+
+    // modal controls
+    const dlg = document.getElementById('dlg'), paramsBox = document.getElementById('params'), typeSel = document.getElementById('type');
+    let activeAsset = 'BTC';
+    function openDlg(asset){
+      activeAsset = asset;
+      const cfg = loadCfg(asset);
+      document.getElementById('dlg-title').textContent = `Choose Strategy — ${asset}`;
+      typeSel.value = cfg.type;
+      drawParams(cfg.type, cfg.params);
+      dlg.showModal();
+    }
+    function drawParams(type, p){
+      const optTF = `<option>1m</option><option>5m</option><option>15m</option><option>1h</option>`;
+      paramsBox.innerHTML = ({
+        'SMA':  `<div class="grid">
+                  <label class="row"><span>Fast</span><input id="p-fast" type="number" min="1" value="${p.fast??9}"></label>
+                  <label class="row"><span>Slow</span><input id="p-slow" type="number" min="1" value="${p.slow??21}"></label>
+                </div>
+                <label class="row"><span>Timeframe</span><select id="p-tf">${optTF}</select></label>`,
+        'RSI':  `<label class="row"><span>Period</span><input id="p-period" type="number" min="2" value="${p.period??14}"></label>
+                <label class="row"><span>Timeframe</span><select id="p-tf">${optTF}</select></label>`,
+        'MACD': `<div class="grid">
+                  <label class="row"><span>Fast</span><input id="p-fast" type="number" min="1" value="${p.fast??12}"></label>
+                  <label class="row"><span>Slow</span><input id="p-slow" type="number" min="1" value="${p.slow??26}"></label>
+                </div>
+                <label class="row"><span>Signal</span><input id="p-signal" type="number" min="1" value="${p.signal??9}"></label>
+                <label class="row"><span>Timeframe</span><select id="p-tf">${optTF}</select></label>`,
+        'VWAP': `<label class="row"><span>Timeframe</span><select id="p-tf">${optTF}</select></label>`
+      })[type];
+      const tf = document.getElementById('p-tf'); if(tf) tf.value = p.timeframe || '1m';
+    }
+    typeSel.addEventListener('change', e => drawParams(e.target.value, {}));
+    document.getElementById('open-btc').onclick = ()=> openDlg('BTC');
+    document.getElementById('open-eth').onclick = ()=> openDlg('ETH');
+    document.getElementById('dlg-close').onclick = ()=> dlg.close();
+    document.getElementById('save').addEventListener('click', (e)=>{
+      e.preventDefault();
+      const t = typeSel.value;
+      const q = id => document.getElementById(id);
+      const cfg = (t==='SMA')  ? { type:t, params:{ fast:+q('p-fast').value, slow:+q('p-slow').value, timeframe:q('p-tf').value } } :
+                  (t==='RSI')  ? { type:t, params:{ period:+q('p-period').value, timeframe:q('p-tf').value } } :
+                  (t==='MACD') ? { type:t, params:{ fast:+q('p-fast').value, slow:+q('p-slow').value, signal:+q('p-signal').value, timeframe:q('p-tf').value } } :
+                                { type:t, params:{ timeframe:q('p-tf').value } };
+      saveCfg(activeAsset, cfg);
+      dlg.close();
+      // refresh open chart (if any)
+      if(document.getElementById('overlay').classList.contains('show')){
+        const sym = activeAsset==='BTC'?'BTCUSDT':'ETHUSDT';
+        openChart(`${activeAsset}/USDT`, sym, cfg);
+      }
     });
-  }
-  document.getElementById('btn-btc').onclick = () => { currentCoin="BTC"; openChart("BTC/USDT","BINANCE:BTCUSDT"); };
-  document.getElementById('btn-eth').onclick = () => { currentCoin="ETH"; openChart("ETH/USDT","BINANCE:ETHUSDT"); };
-  document.getElementById('ov-close').onclick = () => overlay.classList.remove('show');
 
-  // Strategy Modal
-  let selectedCoin = null;
-  function openStrategyModal(coin) {
-    selectedCoin = coin;
-    document.getElementById('modal-title').textContent = "Choose Strategy — " + coin;
-    document.getElementById('strategy-modal').style.display = "flex";
-  }
-  function closeStrategyModal() {
-    document.getElementById('strategy-modal').style.display = "none";
-  }
-  function saveStrategy() {
-    const type = document.getElementById('str-type').value;
-    const fast = document.getElementById('str-fast').value;
-    const slow = document.getElementById('str-slow').value;
-    const tf = document.getElementById('str-timeframe').value;
-    const text = `${type.toUpperCase()} — fast:${fast} | slow:${slow} | tf:${tf}`;
-    document.getElementById('strategy-'+selectedCoin.toLowerCase()).textContent = text;
-    closeStrategyModal();
-  }
-</script>
+    /* ===== Overlay + Charts (Lightweight) ===== */
+    const overlay = document.getElementById('overlay');
+    const ovTitle = document.getElementById('ov-title');
+    const mainDiv = document.getElementById('chart-main');
+    const indDiv  = document.getElementById('chart-ind');
+    document.getElementById('ov-close').onclick = ()=>{ overlay.classList.remove('show'); overlay.style.display='none'; };
+    function showOverlay(){ overlay.style.display='flex'; overlay.classList.add('show'); }
 
+    // indicators helpers
+    function toOHLC(kl){ return kl.map(k=>({ time:Math.floor(k[0]/1000), open:+k[1], high:+k[2], low:+k[3], close:+k[4] })); }
+    function tfToBinance(tf){ return (['1m','5m','15m','1h'].includes(tf)?tf:'1m'); }
+    async function fetchKlines(symbol, interval, limit=500){
+      const urls = [
+        `https://data.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`,
+        `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`
+      ];
+      for(const u of urls){
+        try{
+          const r = await fetch(u, {cache:'no-store'});
+          if(!r.ok) continue;
+          const j = await r.json();
+          if(Array.isArray(j) && j.length) return j;
+        }catch(_){}
+      }
+      throw new Error('No candles');
+    }
+    function sma(vals,p){ const out=[]; let s=0; for(let i=0;i<vals.length;i++){ s+=vals[i]; if(i>=p)s-=vals[i-p]; if(i>=p-1) out.push({i,value:s/p}); } return out; }
+    function ema(vals,p){ const out=[]; const k=2/(p+1); let prev=vals[0]; for(let i=0;i<vals.length;i++){ const v=(i===0)?vals[0]:vals[i]*k+prev*(1-k); prev=v; out.push({i,value:v}); } return out.map((v,i)=>({...v,i})); }
+    function rsi(vals,p){ let g=0,l=0; const out=[]; for(let i=1;i<vals.length;i++){ const ch=vals[i]-vals[i-1], G=Math.max(ch,0), L=Math.max(-ch,0);
+      if(i<=p){ g+=G; l+=L; if(i===p){ const rs=g/(l||1e-9); out.push({i,value:100-100/(1+rs)});} }
+      else{ g=(g*(p-1)+G)/p; l=(l*(p-1)+L)/p; const rs=g/(l||1e-9); out.push({i,value:100-100/(1+rs)});} } return out; }
+    function macd(vals,fast=12,slow=26,signal=9){ const ef=ema(vals,fast).map(x=>x.value), es=ema(vals,slow).map(x=>x.value);
+      const ml=vals.map((_,i)=>(ef[i]??ef[0])-(es[i]??es[0])); const sl=ema(ml.map(v=>v??ml[0]),signal).map(x=>x.value); const h=ml.map((v,i)=>v-(sl[i]??0)); return {ml,sl,h}; }
+    function vwap(c){ const out=[]; let cpv=0,cv=0; for(let i=0;i<c.length;i++){ const tp=(c[i].high+c[i].low+c[i].close)/3; const vol=Math.max(c[i].high-c[i].low,1e-7); cpv+=tp*vol; cv+=vol; out.push({i,value:cpv/cv}); } return out; }
+
+    let mainChart, mainSeries, indChart;
+    function makeCharts(){
+      mainDiv.innerHTML=''; indDiv.innerHTML='';
+      mainChart = LightweightCharts.createChart(mainDiv,{ layout:{background:{type:'Solid',color:'#111'},textColor:'#DDD'},
+        grid:{vertLines:{color:'#1d1d1d'},horzLines:{color:'#1d1d1d'}}, timeScale:{borderColor:'#333'}, rightPriceScale:{borderColor:'#333'} });
+      mainSeries = mainChart.addCandlestickSeries({ upColor:'#26a69a', downColor:'#ef5350', borderUpColor:'#26a69a', borderDownColor:'#ef5350', wickUpColor:'#26a69a', wickDownColor:'#ef5350' });
+      indChart = LightweightCharts.createChart(indDiv,{ layout:{background:{type:'Solid',color:'#111'},textColor:'#DDD'},
+        grid:{vertLines:{color:'#1d1d1d'},horzLines:{color:'#1d1d1d'}}, timeScale:{borderColor:'#333'}, rightPriceScale:{borderColor:'#333'} });
+    }
+
+    async function openChart(label, symbol, cfg){
+      showOverlay(); ovTitle.textContent = `${label} — Custom Chart`;
+      const tf = tfToBinance(cfg?.params?.timeframe || '1m');
+      let raw;
+      try{ raw = await fetchKlines(symbol, tf, 500); }
+      catch(e){
+        mainDiv.innerHTML = '<div style="padding:18px;color:#bbb">Unable to load candles (network/CORS). Try again.</div>';
+        indDiv.style.display='none'; return;
+      }
+      const candles = toOHLC(raw);
+      const closes = candles.map(c=>c.close);
+
+      makeCharts();
+      mainSeries.setData(candles);
+      indDiv.style.display='none';
+
+      const t = cfg?.type || 'SMA', p = cfg?.params || {};
+      if(t==='SMA'){
+        const f = Number(p.fast)||9, s = Number(p.slow)||21;
+        const sf = sma(closes,f).map(o=>({time:candles[o.i].time, value:o.value}));
+        const ss = sma(closes,s).map(o=>({time:candles[o.i].time, value:o.value}));
+        const lf = mainChart.addLineSeries({lineWidth:2}); lf.setData(sf);
+        const ls = mainChart.addLineSeries({lineWidth:2}); ls.setData(ss);
+      }else if(t==='RSI'){
+        const per = Number(p.period)||14;
+        const r = rsi(closes,per).map(o=>({time:candles[o.i].time, value:o.value}));
+        indDiv.style.display='block';
+        const rs = indChart.addLineSeries({lineWidth:2}); rs.setData(r);
+      }else if(t==='MACD'){
+        const f=Number(p.fast)||12,s=Number(p.slow)||26,sg=Number(p.signal)||9;
+        const {ml,sl,h} = macd(closes,f,s,sg);
+        indDiv.style.display='block';
+        const m = indChart.addLineSeries({lineWidth:2});
+        const sline = indChart.addLineSeries({lineWidth:2});
+        const hist = indChart.addHistogramSeries();
+        m.setData(ml.map((v,i)=>({time:candles[i].time, value:v})));
+        sline.setData(sl.map((v,i)=>({time:candles[i].time, value:v})));
+        hist.setData(h.map((v,i)=>({time:candles[i].time, value:v})));
+      }else if(t==='VWAP'){
+        const w = vwap(candles).map(o=>({time:candles[o.i].time, value:o.value}));
+        const v = mainChart.addLineSeries({lineWidth:2}); v.setData(w);
+      }
+
+      mainChart.timeScale().fitContent();
+      indChart.timeScale().fitContent();
+    }
+
+    // open chart on card tap (use saved configs)
+    document.getElementById('card-btc').onclick = ()=> openChart('BTC/USDT','BTCUSDT', loadCfg('BTC'));
+    document.getElementById('card-eth').onclick = ()=> openChart('ETH/USDT','ETHUSDT', loadCfg('ETH'));
+
+    // top buttons open chart too
+    document.getElementById('btn-btc').onclick = ()=> openChart('BTC/USDT','BTCUSDT', loadCfg('BTC'));
+    document.getElementById('btn-eth').onclick = ()=> openChart('ETH/USDT','ETHUSDT', loadCfg('ETH'));
+  </script>
 </body>
   </html>
