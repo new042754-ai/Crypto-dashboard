@@ -3,22 +3,32 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>JK ALGO — Minimal Market</title>
+  <title>JK ALGO — Market</title>
 
-  <!-- minimal inline styles so UI dikhe hi dikhe -->
   <style>
-    body{margin:0;font-family:system-ui,Roboto,Arial;background:#fff;color:#111}
-    header{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid #eee}
-    h2{margin:0;font-size:18px}
-    a{color:#1a73e8;text-decoration:none}
-    main{padding:14px}
+    :root{--bg:#fff;--fg:#111;--muted:#666;--line:#eee;--pri:#1a73e8}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,Roboto,Arial;background:var(--bg);color:var(--fg)}
+    header{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid var(--line)}
+    h2{margin:0;font-size:20px}
+    header a{color:var(--pri);text-decoration:none}
+    main{padding:12px}
     .page{display:none}
     .page.active{display:block}
-    .row{display:flex;justify-content:space-between;align-items:center;border:1px solid #eee;border-radius:10px;padding:14px 16px;margin-bottom:12px}
-    .name{font-weight:600}
-    .price{font-weight:700}
-    #tv{height:60vh;border:1px solid #eee;border-radius:12px}
+    .coin-row{display:flex;align-items:center;gap:10px;justify-content:space-between;border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:10px}
+    .left{display:flex;align-items:center;gap:10px}
+    .logo{width:24px;height:24px;border-radius:50%;background:#eee;display:grid;place-items:center;font-weight:700}
+    .name{font-weight:700}
+    .px{font-weight:800}
+    .red{color:#e53935}.green{color:#178a4b}
     button{padding:8px 12px;border-radius:8px;border:1px solid #ddd;background:#f8f8f8}
+    #tv{height:62vh;border:1px solid var(--line);border-radius:12px}
+    #tfTabs{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+    #tfTabs button{border:1px solid var(--line);background:#fafafa}
+    #tfTabs button.active{background:#111;color:#fff;border-color:#111}
+    .bottom-nav{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:8px 0}
+    .bottom-nav button{background:transparent;border:none;font-size:14px}
+    .spacer{height:58px}
   </style>
 
   <!-- TradingView -->
@@ -32,25 +42,43 @@
   </header>
 
   <main>
-    <!-- Market page -->
+    <!-- MARKET -->
     <section id="pgMarket" class="page active">
-      <div id="list">
-        <!-- JS will insert one BTC row here -->
-      </div>
+      <div id="list"></div>
+      <div class="spacer"></div>
     </section>
 
-    <!-- Chart page -->
+    <!-- CHART -->
     <section id="pgChart" class="page">
-      <div style="display:flex;gap:10px;align-items:center;margin-bottom:10px">
+      <div style="display:flex;gap:10px;align-items:center;margin-bottom:8px">
         <button id="btnBack">← Back</button>
         <h3 id="pair" style="margin:0">BTC/USDT</h3>
         <span id="live" style="margin-left:auto;font-weight:bold"></span>
       </div>
+
+      <div id="tfTabs">
+        <button data-tf="1"  class="tf">1m</button>
+        <button data-tf="5"  class="tf">5m</button>
+        <button data-tf="15" class="tf active">15m</button>
+        <button data-tf="30" class="tf">30m</button>
+        <button data-tf="60" class="tf">1h</button>
+        <button data-tf="240" class="tf">4h</button>
+      </div>
+
       <div id="tv"></div>
+      <div class="spacer"></div>
     </section>
   </main>
 
-  <!-- App script -->
-  <script src="script.js?v=1"></script>
+  <!-- Bottom nav -->
+  <div class="bottom-nav">
+    <button onclick="goto('market')">Home</button>
+    <button onclick="goto('market')">Market</button>
+    <button onclick="goto('chart')">Trade</button>
+    <button onclick="goto('market')">Discover</button>
+    <button onclick="location.href='login.html'">My Account</button>
+  </div>
+
+  <script src="script.js?v=7"></script>
 </body>
 </html>
